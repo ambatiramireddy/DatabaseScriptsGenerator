@@ -1,0 +1,39 @@
+﻿
+IF EXISTS (SELECT * FROM sysobjects WHERE id = object_id('<#= this.SelectProcName #>') and type = 'p')
+DROP PROC <#= this.SelectProcName #>
+GO
+
+IF EXISTS (SELECT * FROM sysobjects WHERE id = object_id('<#= this.SelectAllProcName #>') and type = 'p')
+DROP PROC <#= this.SelectAllProcName #>
+GO
+
+IF EXISTS (SELECT * FROM sysobjects WHERE id = object_id('<#= this.InsertProcName #>') and type = 'p')
+DROP PROC <#= this.InsertProcName #>
+GO
+
+IF EXISTS (SELECT * FROM sysobjects WHERE id = object_id('<#= this.UpdateProcName #>') and type = 'p')
+DROP PROC <#= this.UpdateProcName #>
+GO
+
+IF EXISTS (SELECT * FROM sysobjects WHERE id = object_id('<#= this.DeleteProcName #>') and type = 'p')
+DROP PROC <#= this.DeleteProcName #>
+GO
+
+IF EXISTS (SELECT * FROM systypes WHERE name = 'tt_<#= this.TableName #>')
+DROP TYPE <#= this.TableTypeName #>
+GO
+
+<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#+
+public string TableName { get; set; }
+public string SelectProcName { get; set; }
+public string SelectAllProcName { get; set; }
+public string InsertProcName { get; set; }
+public string UpdateProcName { get; set; }
+public string DeleteProcName { get; set; }
+public string TableTypeName { get; set; }
+#>

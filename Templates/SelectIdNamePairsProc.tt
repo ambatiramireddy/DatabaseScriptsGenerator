@@ -1,12 +1,10 @@
 ﻿
-CREATE PROC <#= this.SelectProcName #>
-<#= this.keyColumnAndTypeList #>
+CREATE PROC <#= this.SelectIdNamePairsProcName #>
 AS
 BEGIN
 
-	SELECT <#= this.AllColumnList #>
+	SELECT <#= this.IdNameColumnList #>
 	FROM [<#= this.Owner #>].[<#= this.TableName #>]
-	WHERE <#= this.WhereClause #>
 
 END
 GO
@@ -19,8 +17,6 @@ GO
 <#+
 public string Owner { get; set; }
 public string TableName { get; set; }
-public string SelectProcName { get; set; }
-public string AllColumnList { get; set; }
-public string keyColumnAndTypeList { get; set; }
-public string WhereClause { get; set; }
+public string SelectIdNamePairsProcName { get; set; }
+public string IdNameColumnList { get; set; }
 #>

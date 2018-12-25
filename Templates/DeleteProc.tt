@@ -1,5 +1,5 @@
 ﻿
-CREATE PROC <#= this.ProcName #>
+CREATE PROC <#= this.DeleteProcName #>
 <#= this.keyColumnAndTypeList #>
 AS
 BEGIN
@@ -21,7 +21,7 @@ GO
 <#+
 public string Owner { get; set; }
 public string TableName { get; set; }
-public string ProcName { get; set; }
+public string DeleteProcName { get; set; }
 public string keyColumnAndTypeList { get; set; }
 public string WhereClause { get; set; }
 public string[] ReferenceTableDeletes { get; set; }

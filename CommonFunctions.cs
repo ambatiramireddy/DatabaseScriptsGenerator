@@ -59,7 +59,7 @@ namespace DatabaseScriptsGenerator
                 case "image":
                 case "varbinary":
                     {
-                        dotNetType = "Byte[]";
+                        dotNetType = "byte[]";
                         break;
                     }
                 case "uniqueidentifier":
@@ -94,22 +94,23 @@ namespace DatabaseScriptsGenerator
                     }
             }
 
-            return (column.Nullable && dotNetType != "string") ? dotNetType + "?" : dotNetType;
+            string[] defaultNullableTypesInDotNet = { "string", "byte[]" };
+            return (column.Nullable && defaultNullableTypesInDotNet.All(t => !t.Equals(dotNetType))) ? dotNetType + "?" : dotNetType;
         }
 
         public static void WriteFileToProject(string itemType, string filePath, string projectPath, string content)
         {
-            if (!File.Exists(filePath))
-            {
+            //if (!File.Exists(filePath))
+            //{
+            //    File.WriteAllText(filePath, content);
+            //    var p = new Microsoft.Build.Evaluation.Project(projectPath);
+            //    p.AddItem(itemType, filePath);//Compile for .cs file and Content for other files .sql, .txt etc..
+            //    p.Save();
+            //}
+            //else
+            //{
                 File.WriteAllText(filePath, content);
-                var p = new Microsoft.Build.Evaluation.Project(projectPath);
-                p.AddItem(itemType, filePath);//Compile for .cs file and Content for other files .sql, .txt etc..
-                p.Save();
-            }
-            else
-            {
-                File.WriteAllText(filePath, content);
-            }
+            //}
         }
     }
 }

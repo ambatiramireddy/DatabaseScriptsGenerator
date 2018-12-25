@@ -1,5 +1,5 @@
 ﻿
-CREATE PROC <#= this.ProcName #>
+CREATE PROC <#= this.InsertProcName #>
 @<#= this.TableName #> tt_<#= this.TableName #> READONLY
 AS
 BEGIN
@@ -23,7 +23,7 @@ GO
 <#+
 public string Owner { get; set; }
 public string TableName { get; set; }
-public string ProcName { get; set; }
+public string InsertProcName { get; set; }
 public string AllColumnList { get; set; }
 public string InsertColumnList { get; set; }
 public bool HasCreatedDateColumn { get; set; }

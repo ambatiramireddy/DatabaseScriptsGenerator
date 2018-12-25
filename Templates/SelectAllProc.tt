@@ -1,5 +1,5 @@
 ﻿
-CREATE PROC <#= this.ProcName #>
+CREATE PROC <#= this.SelectAllProcName #>
 AS
 BEGIN
 
@@ -17,6 +17,6 @@ GO
 <#+
 public string Owner { get; set; }
 public string TableName { get; set; }
-public string ProcName { get; set; }
+public string SelectAllProcName { get; set; }
 public string AllColumnList { get; set; }
 #>

@@ -1,5 +1,5 @@
 ﻿
-CREATE PROC <#= this.ProcName #>
+CREATE PROC <#= this.UpdateProcName #>
 @<#= this.TableName #> tt_<#= this.TableName #> READONLY
 AS
 BEGIN
@@ -21,7 +21,7 @@ GO
 <#+
 public string Owner { get; set; }
 public string TableName { get; set; }
-public string ProcName { get; set; }
+public string UpdateProcName { get; set; }
 public string UpdateColumnList { get; set; }
 public string OnClause { get; set; }
 #>

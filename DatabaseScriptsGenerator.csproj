@@ -60,6 +60,11 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
+    <Compile Include="Templates\SelectIdNamePairsProc.cs">
+      <DependentUpon>SelectIdNamePairsProc.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
     <Compile Include="Templates\TableType.cs">
       <DependentUpon>TableType.tt</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -104,6 +109,10 @@
     <Content Include="Templates\Entity.tt">
       <Generator>TextTemplatingFilePreprocessor</Generator>
       <LastGenOutput>Entity.cs</LastGenOutput>
+    </Content>
+    <Content Include="Templates\SelectIdNamePairsProc.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>SelectIdNamePairsProc.cs</LastGenOutput>
     </Content>
     <Content Include="Templates\TableType.tt">
       <Generator>TextTemplatingFilePreprocessor</Generator>

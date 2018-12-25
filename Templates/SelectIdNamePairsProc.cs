@@ -18,9 +18,9 @@ namespace DatabaseScriptsGenerator.Templates
     /// Class to produce the template output
     /// </summary>
     
-    #line 1 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\DropScript.tt"
+    #line 1 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\SelectIdNamePairsProc.tt"
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.TextTemplating", "15.0.0.0")]
-    public partial class DropScript : DropScriptBase
+    public partial class SelectIdNamePairsProc : SelectIdNamePairsProcBase
     {
 #line hidden
         /// <summary>
@@ -28,132 +28,44 @@ namespace DatabaseScriptsGenerator.Templates
         /// </summary>
         public virtual string TransformText()
         {
-            this.Write("\r\nIF EXISTS (SELECT * FROM sysobjects WHERE id = object_id(\'");
+            this.Write("\r\nCREATE PROC ");
             
-            #line 2 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\DropScript.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(this.SelectProcName));
-            
-            #line default
-            #line hidden
-            this.Write("\') and type = \'p\')\r\nDROP PROC ");
-            
-            #line 3 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\DropScript.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(this.SelectProcName));
-            
-            #line default
-            #line hidden
-            this.Write("\r\nGO\r\n\r\nIF EXISTS (SELECT * FROM sysobjects WHERE id = object_id(\'");
-            
-            #line 6 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\DropScript.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(this.SelectAllProcName));
-            
-            #line default
-            #line hidden
-            this.Write("\') and type = \'p\')\r\nDROP PROC ");
-            
-            #line 7 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\DropScript.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(this.SelectAllProcName));
-            
-            #line default
-            #line hidden
-            this.Write("\r\nGO\r\n\r\n");
-            
-            #line 10 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\DropScript.tt"
- if(!string.IsNullOrEmpty(this.SelectIdNamePairsProcName)){
-            
-            #line default
-            #line hidden
-            this.Write("IF EXISTS (SELECT * FROM sysobjects WHERE id = object_id(\'");
-            
-            #line 11 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\DropScript.tt"
+            #line 2 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\SelectIdNamePairsProc.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(this.SelectIdNamePairsProcName));
             
             #line default
             #line hidden
-            this.Write("\') and type = \'p\')\r\nDROP PROC ");
+            this.Write("\r\nAS\r\nBEGIN\r\n\r\n\tSELECT ");
             
-            #line 12 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\DropScript.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(this.SelectIdNamePairsProcName));
-            
-            #line default
-            #line hidden
-            this.Write("\r\nGO\r\n");
-            
-            #line 14 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\DropScript.tt"
-}
+            #line 6 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\SelectIdNamePairsProc.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture(this.IdNameColumnList));
             
             #line default
             #line hidden
-            this.Write("\r\nIF EXISTS (SELECT * FROM sysobjects WHERE id = object_id(\'");
+            this.Write("\r\n\tFROM [");
             
-            #line 16 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\DropScript.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(this.InsertProcName));
-            
-            #line default
-            #line hidden
-            this.Write("\') and type = \'p\')\r\nDROP PROC ");
-            
-            #line 17 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\DropScript.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(this.InsertProcName));
+            #line 7 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\SelectIdNamePairsProc.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture(this.Owner));
             
             #line default
             #line hidden
-            this.Write("\r\nGO\r\n\r\nIF EXISTS (SELECT * FROM sysobjects WHERE id = object_id(\'");
+            this.Write("].[");
             
-            #line 20 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\DropScript.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(this.UpdateProcName));
-            
-            #line default
-            #line hidden
-            this.Write("\') and type = \'p\')\r\nDROP PROC ");
-            
-            #line 21 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\DropScript.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(this.UpdateProcName));
-            
-            #line default
-            #line hidden
-            this.Write("\r\nGO\r\n\r\nIF EXISTS (SELECT * FROM sysobjects WHERE id = object_id(\'");
-            
-            #line 24 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\DropScript.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(this.DeleteProcName));
-            
-            #line default
-            #line hidden
-            this.Write("\') and type = \'p\')\r\nDROP PROC ");
-            
-            #line 25 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\DropScript.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(this.DeleteProcName));
-            
-            #line default
-            #line hidden
-            this.Write("\r\nGO\r\n\r\nIF EXISTS (SELECT * FROM systypes WHERE name = \'tt_");
-            
-            #line 28 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\DropScript.tt"
+            #line 7 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\SelectIdNamePairsProc.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(this.TableName));
             
             #line default
             #line hidden
-            this.Write("\')\r\nDROP TYPE ");
-            
-            #line 29 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\DropScript.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(this.TableTypeName));
-            
-            #line default
-            #line hidden
-            this.Write("\r\nGO\r\n\r\n");
+            this.Write("]\r\n\r\nEND\r\nGO\r\n\r\n");
             return this.GenerationEnvironment.ToString();
         }
         
-        #line 37 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\DropScript.tt"
+        #line 17 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\SelectIdNamePairsProc.tt"
 
+public string Owner { get; set; }
 public string TableName { get; set; }
-public string SelectProcName { get; set; }
-public string SelectAllProcName { get; set; }
 public string SelectIdNamePairsProcName { get; set; }
-public string InsertProcName { get; set; }
-public string UpdateProcName { get; set; }
-public string DeleteProcName { get; set; }
-public string TableTypeName { get; set; }
+public string IdNameColumnList { get; set; }
 
         
         #line default
@@ -167,7 +79,7 @@ public string TableTypeName { get; set; }
     /// Base class for this transformation
     /// </summary>
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.TextTemplating", "15.0.0.0")]
-    public class DropScriptBase
+    public class SelectIdNamePairsProcBase
     {
         #region Fields
         private global::System.Text.StringBuilder generationEnvironmentField;

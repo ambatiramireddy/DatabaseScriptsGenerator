@@ -7,6 +7,12 @@ IF EXISTS (SELECT * FROM sysobjects WHERE id = object_id('<#= this.SelectAllProc
 DROP PROC <#= this.SelectAllProcName #>
 GO
 
+<# if(!string.IsNullOrEmpty(this.SelectIdNamePairsProcName)){#>
+IF EXISTS (SELECT * FROM sysobjects WHERE id = object_id('<#= this.SelectIdNamePairsProcName #>') and type = 'p')
+DROP PROC <#= this.SelectIdNamePairsProcName #>
+GO
+<#}#>
+
 IF EXISTS (SELECT * FROM sysobjects WHERE id = object_id('<#= this.InsertProcName #>') and type = 'p')
 DROP PROC <#= this.InsertProcName #>
 GO
@@ -32,6 +38,7 @@ GO
 public string TableName { get; set; }
 public string SelectProcName { get; set; }
 public string SelectAllProcName { get; set; }
+public string SelectIdNamePairsProcName { get; set; }
 public string InsertProcName { get; set; }
 public string UpdateProcName { get; set; }
 public string DeleteProcName { get; set; }

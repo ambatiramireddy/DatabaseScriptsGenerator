@@ -1,4 +1,5 @@
-﻿using System.Configuration;
+﻿using System.Collections.Generic;
+using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 
@@ -10,9 +11,10 @@ namespace DatabaseScriptsGenerator
         {
             SqlTable table = new SqlTable();
             table.Owner = "dbo";
-            table.Name = "Screen";
-            string connectionString = ConfigurationManager.ConnectionStrings["TestConnection"].ConnectionString;
+            table.Name = "User";
+            table.NameColumns = new List<string> { "first_name", "middle_name", "last_name" };
 
+            string connectionString = ConfigurationManager.ConnectionStrings["TestConnection"].ConnectionString;
             using (var con = new SqlConnection(connectionString))
             {
                 using (var cmd = new SqlCommand($"exec sp_help '{table.Owner}.{table.Name}'", con))

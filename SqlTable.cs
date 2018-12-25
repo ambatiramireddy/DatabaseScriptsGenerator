@@ -11,6 +11,7 @@ namespace DatabaseScriptsGenerator
 {
     public class SqlTable
     {
+        List<ColumnInfo> allColumns;
         string nonKeyColumnList;
         string allColumnList;
         string keyColumnList;
@@ -23,7 +24,7 @@ namespace DatabaseScriptsGenerator
         string[] referenceTableDeletes;
         string referenceTableWhereClause;
         string allColumnAndTypeList;
-        List<ColumnInfo> allColumns;
+        string idNameColumnList;
 
         public SqlTable()
         {
@@ -32,6 +33,7 @@ namespace DatabaseScriptsGenerator
 
         public string Owner { get; set; }
         public string Name { get; set; }
+        public List<string> NameColumns { get; set; }
         public DataTable ColumnDetails { get; set; }
         public string KeyColumns { get; set; }
         public DataTable ForeignKeyRelations { get; set; }
@@ -113,6 +115,8 @@ namespace DatabaseScriptsGenerator
                 return $"DELETE FROM [{fkTableOwner}].[{fkTableName}] WHERE [{fkColumnName}] = @{pkColumnName}";
             }).ToArray();
 
+            this.idNameColumnList = string.Format("id, ({0}) as name", string.Join(" + ' ' + ", this.NameColumns.Select(s => $"[{s}]")));
+
             this.GenerateScripts();
         }
 
@@ -124,17 +128,6 @@ namespace DatabaseScriptsGenerator
             string insertProcName = $"[{this.Owner}].[usp_Insert_{this.Name}]";
             string updateProcName = $"[{this.Owner}].[usp_Update_{this.Name}]";
             string deleteProcName = $"[{this.Owner}].[usp_Delete_{this.Name}]";
-
-            var dropScript = new DropScript()
-            {
-                TableName = this.Name,
-                TableTypeName = tableTypeName,
-                SelectProcName = selectProcName,
-                SelectAllProcName = selectAllProcName,
-                InsertProcName = insertProcName,
-                UpdateProcName = updateProcName,
-                DeleteProcName = deleteProcName,
-            }.TransformText().TrimStart('\r', '\n');
 
             var tableType = new TableType()
             {
@@ -191,20 +184,52 @@ namespace DatabaseScriptsGenerator
                 ReferenceTableDeletes = this.referenceTableDeletes,
             }.TransformText().TrimStart('\r', '\n');
 
+            string selectIdNamePairsProcName = string.Empty;
+            string selectIdNamePairsProc = string.Empty;
+            if (!string.IsNullOrEmpty(this.idNameColumnList))
+            {
+                selectIdNamePairsProcName = $"[{this.Owner}].[usp_Select_{this.Name}_IdNamePairs]";
+                selectIdNamePairsProc = new SelectIdNamePairsProc()
+                {
+                    TableName = this.Name,
+                    Owner = this.Owner,
+                    SelectIdNamePairsProcName = selectIdNamePairsProcName,
+                    IdNameColumnList = this.idNameColumnList,
+                }.TransformText().TrimStart('\r', '\n');
+            }
+
+            var dropScript = new DropScript()
+            {
+                TableName = this.Name,
+                TableTypeName = tableTypeName,
+                SelectProcName = selectProcName,
+                SelectAllProcName = selectAllProcName,
+                SelectIdNamePairsProcName = selectIdNamePairsProcName,
+                InsertProcName = insertProcName,
+                UpdateProcName = updateProcName,
+                DeleteProcName = deleteProcName,
+            }.TransformText().TrimStart('\r', '\n');
+
             StringBuilder sb = new StringBuilder();
             sb.Append(dropScript);
             sb.Append(tableType);
+
             sb.Append(selectProc);
             sb.Append(selectAllProc);
+            if (!string.IsNullOrEmpty(selectIdNamePairsProc))
+            {
+                sb.Append(selectIdNamePairsProc);
+            }
+
             sb.Append(insertProc);
             sb.Append(updateProc);
             sb.Append(deleteProc);
+           
 
             var script = sb.ToString();
 
             var solutionRootFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../");
             
-
             var dbProjectPath = Path.Combine(solutionRootFolder, "DatabaseScriptsGenerator/DatabaseScriptsGenerator.csproj");
             var dbScriptPath = Path.Combine(solutionRootFolder, "DatabaseScriptsGenerator/Files/Script.sql");
             CommonFunctions.WriteFileToProject("Content", dbScriptPath, dbProjectPath, script);

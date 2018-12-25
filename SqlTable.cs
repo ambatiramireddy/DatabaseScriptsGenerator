@@ -17,12 +17,16 @@ namespace DatabaseScriptsGenerator
         string keyColumnList;
         string whereClause;
         string onClause;
-        string insertColumnList;
+       
+        string insertIntoColumnList;
+        string insertSelectColumnList;
+        bool hasCreatedDateColumn;
+        bool isKeyColumnGuidColumn;
+
         string updateColumnList;
         string keyColumnAndTypeList;
-        bool hasCreatedDateColumn;
+       
         string[] referenceTableDeletes;
-        string referenceTableWhereClause;
         string allColumnAndTypeList;
         string idNameColumnList;
 
@@ -35,7 +39,8 @@ namespace DatabaseScriptsGenerator
         public string Name { get; set; }
         public List<string> NameColumns { get; set; }
         public DataTable ColumnDetails { get; set; }
-        public string KeyColumns { get; set; }
+        public string IdentityColumn { get; set; }
+        public string[] KeyColumns { get; set; }
         public DataTable ForeignKeyRelations { get; set; }
 
         public void GenerateProcs()
@@ -44,22 +49,28 @@ namespace DatabaseScriptsGenerator
             List<ColumnInfo> nonKeyColumns = new List<ColumnInfo>();
             foreach (DataRow row in ColumnDetails.Rows)
             {
-                var colName = row[0].ToString();
-                var colType = row[1].ToString();
-                var colLength = Convert.ToInt32(row[3].ToString());
-                colLength = colType.ToLower().Equals("nvarchar") ? colLength / 2 : colLength;
+                var columnName = row[0].ToString();
+                var columnType = row[1].ToString();
+                var columnLength = Convert.ToInt32(row[3].ToString());
+                columnLength = columnType.ToLower().Equals("nvarchar") ? columnLength / 2 : columnLength;
 
                 var colNullable = row[6].ToString() == "yes" ? true : false;
 
                 //specify length only for char, varchar, nvarchar types
-                string colLengthString = colType.ToLower().Contains("char") ? $"({colLength})" : string.Empty;
-                if (colName.Equals(KeyColumns))
+                string colLengthString = columnType.ToLower().Contains("char") ? $"({columnLength})" : string.Empty;
+
+                var modifiedColumnName = string.Join("", columnName.Split(" _".ToCharArray())).ToLower();
+                if (modifiedColumnName.Equals("isdeleted"))
                 {
-                    keyColumns.Add(new ColumnInfo { Name = colName, Type = $"{colType}{colLengthString}", Nullable = colNullable });
+                    //ignore
+                }
+                else if (KeyColumns.Any(c => c.Equals(columnName)))
+                {
+                    keyColumns.Add(new ColumnInfo { Name = columnName, Type = $"{columnType}{colLengthString}", Nullable = colNullable });
                 }
                 else
                 {
-                    nonKeyColumns.Add(new ColumnInfo { Name = colName, Type = $"{colType}{colLengthString}", Nullable = colNullable });
+                    nonKeyColumns.Add(new ColumnInfo { Name = columnName, Type = $"{columnType}{colLengthString}", Nullable = colNullable });
                 }
             }
 
@@ -74,18 +85,30 @@ namespace DatabaseScriptsGenerator
             this.keyColumnList = string.Join(twoTabSeparator, keyColumns.Select(c => $"[{c.Name}]"));
             this.nonKeyColumnList = string.Join(twoTabSeparator, nonKeyColumns.Select(c => $"[{c.Name}]"));
             this.allColumnList = indentation + string.Join(twoTabSeparator, allColumns.Select(c => $"[{c.Name}]"));
-            this.whereClause = string.Join("AND", keyColumns.Select(c => $"{c.Name} = @{c.Name}"));
-            this.onClause = string.Join("AND", keyColumns.Select(c => $"t.{c.Name} = s.{c.Name}"));
+
+            this.whereClause = string.Join(" AND ", keyColumns.Select(c => $"{c.Name} = @{c.Name}"));
+            this.onClause = string.Join(" AND ", keyColumns.Select(c => $"t.{c.Name} = s.{c.Name}"));
 
             this.hasCreatedDateColumn = nonKeyColumns.Any(c => string.Join("", c.Name.Split(" _".ToCharArray())).ToLower().Equals("createddate"));
 
-            this.insertColumnList = indentation + string.Join(twoTabSeparator, allColumns.Select(c =>
+            this.isKeyColumnGuidColumn = keyColumns[0].Type.Equals("uniqueidentifier");
+            var insertColumns = allColumns.Where(c => !c.Name.Equals(this.IdentityColumn)).ToArray();
+            this.insertIntoColumnList = indentation + string.Join(twoTabSeparator, insertColumns.Select(c => $"[{c.Name}]"));
+            this.insertSelectColumnList = indentation + string.Join(twoTabSeparator, insertColumns.Select(c =>
             {
                 var col = string.Join("", c.Name.Split(" _".ToCharArray())).ToLower();
                 if (col.Equals("createddate") || col.Equals("modifieddate") || col.Equals("updateddate"))
+                {
                     return "@today";
+                }
+                else if (c.Type.Equals("uniqueidentifier"))
+                {
+                    return "@guid";
+                }
                 else
+                {
                     return $"[{c.Name}]";
+                }
             }));
 
             this.updateColumnList = indentation + string.Join(twoTabSeparator, nonKeyColumns.Select(c =>
@@ -106,7 +129,8 @@ namespace DatabaseScriptsGenerator
                 }
             }).Where(s => s != string.Empty));
 
-            referenceTableDeletes = ForeignKeyRelations.AsEnumerable().Select(r =>
+
+            this.referenceTableDeletes = ForeignKeyRelations.AsEnumerable().Select(r =>
             {
                 var fkTableOwner = r[5].ToString();
                 var fkTableName = r[6].ToString();
@@ -115,7 +139,10 @@ namespace DatabaseScriptsGenerator
                 return $"DELETE FROM [{fkTableOwner}].[{fkTableName}] WHERE [{fkColumnName}] = @{pkColumnName}";
             }).ToArray();
 
-            this.idNameColumnList = string.Format("id, ({0}) as name", string.Join(" + ' ' + ", this.NameColumns.Select(s => $"[{s}]")));
+            if (this.NameColumns.Count > 0)
+            {
+                this.idNameColumnList = string.Format("[id], ({0}) as [name]", string.Join(" + ' ' + ", this.NameColumns.Select(s => $"[{s}]")));
+            }
 
             this.GenerateScripts();
         }
@@ -124,7 +151,7 @@ namespace DatabaseScriptsGenerator
         {
             string tableTypeName = $"[{this.Owner}].[tt_{this.Name}]";
             string selectProcName = $"[{this.Owner}].[usp_Select_{this.Name}]";
-            string selectAllProcName = $"[{this.Owner}].[usp_SelectAll_{this.Name}s]";
+            string selectAllProcName = $"[{this.Owner}].[usp_SelectAll_" + (this.Name.EndsWith("y") ? $"{this.Name.TrimEnd('y')}ies]" : $"{this.Name}s]");
             string insertProcName = $"[{this.Owner}].[usp_Insert_{this.Name}]";
             string updateProcName = $"[{this.Owner}].[usp_Update_{this.Name}]";
             string deleteProcName = $"[{this.Owner}].[usp_Delete_{this.Name}]";
@@ -160,9 +187,11 @@ namespace DatabaseScriptsGenerator
                 TableName = this.Name,
                 Owner = this.Owner,
                 InsertProcName = insertProcName,
-                AllColumnList = this.allColumnList,
-                InsertColumnList = this.insertColumnList,
-                HasCreatedDateColumn = this.hasCreatedDateColumn
+                InsertIntoColumnList = this.insertIntoColumnList,
+                InsertSelectColumnList = this.insertSelectColumnList,
+                IdentityColumn = this.IdentityColumn,
+                HasCreatedDateColumn = this.hasCreatedDateColumn,
+                IsKeyColumnGuidColumn = this.isKeyColumnGuidColumn
             }.TransformText().TrimStart('\r', '\n');
 
             var updateProc = new UpdateProc()

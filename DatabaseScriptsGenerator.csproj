@@ -55,6 +55,11 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
+    <Compile Include="Templates\InsertProc.cs">
+      <DependentUpon>InsertProc.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
     <Compile Include="Templates\Entity.cs">
       <DependentUpon>Entity.tt</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -80,11 +85,6 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
-    <Compile Include="Templates\InsertProc1.cs">
-      <DependentUpon>InsertProc.tt</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-    </Compile>
     <Compile Include="Templates\SelectAllProc.cs">
       <DependentUpon>SelectAllProc.tt</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -106,6 +106,10 @@
       <Generator>TextTemplatingFilePreprocessor</Generator>
       <LastGenOutput>DeleteProc.cs</LastGenOutput>
     </Content>
+    <Content Include="Templates\InsertProc.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>InsertProc.cs</LastGenOutput>
+    </Content>
     <Content Include="Templates\Entity.tt">
       <Generator>TextTemplatingFilePreprocessor</Generator>
       <LastGenOutput>Entity.cs</LastGenOutput>
@@ -125,10 +129,6 @@
     <Content Include="Templates\UpdateProc.tt">
       <Generator>TextTemplatingFilePreprocessor</Generator>
       <LastGenOutput>UpdateProc.cs</LastGenOutput>
-    </Content>
-    <Content Include="Templates\InsertProc.tt">
-      <Generator>TextTemplatingFilePreprocessor</Generator>
-      <LastGenOutput>InsertProc1.cs</LastGenOutput>
     </Content>
     <Content Include="Templates\SelectAllProc.tt">
       <Generator>TextTemplatingFilePreprocessor</Generator>

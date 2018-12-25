@@ -3,14 +3,24 @@ CREATE PROC <#= this.InsertProcName #>
 @<#= this.TableName #> tt_<#= this.TableName #> READONLY
 AS
 BEGIN
-    <# if(HasCreatedDateColumn){#>
 
+<# if(HasCreatedDateColumn){#>
 	DECLARE @today datetime = GETUTCDATE()
-	<#}#>
+<#}#>
+<# if(IsKeyColumnGuidColumn){#>
+	DECLARE @guid uniqueidentifier = NEWID()
+<#}#>
 
-	INSERT INTO [<#= this.Owner #>].[<#= this.TableName #>](<#= this.AllColumnList #>)
-	SELECT <#= this.InsertColumnList #>
+	INSERT INTO [<#= this.Owner #>].[<#= this.TableName #>](<#= this.InsertIntoColumnList #>)
+	SELECT <#= this.InsertSelectColumnList #>
 	FROM @<#= this.TableName #>
+
+<# if(!string.IsNullOrEmpty(IdentityColumn)){#>
+	SELECT SCOPE_IDENTITY()
+<#}#>
+<# if(IsKeyColumnGuidColumn){#>
+	SELECT @guid
+<#}#>
 
 END        
 GO
@@ -24,7 +34,9 @@ GO
 public string Owner { get; set; }
 public string TableName { get; set; }
 public string InsertProcName { get; set; }
-public string AllColumnList { get; set; }
-public string InsertColumnList { get; set; }
+public string InsertIntoColumnList { get; set; }
+public string InsertSelectColumnList { get; set; }
+public string IdentityColumn { get; set; }
 public bool HasCreatedDateColumn { get; set; }
+public bool IsKeyColumnGuidColumn { get; set; }
 #>

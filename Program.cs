@@ -2,6 +2,7 @@
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
+using System.Linq;
 
 namespace DatabaseScriptsGenerator
 {
@@ -11,8 +12,8 @@ namespace DatabaseScriptsGenerator
         {
             SqlTable table = new SqlTable();
             table.Owner = "dbo";
-            table.Name = "User";
-            table.NameColumns = new List<string> { "first_name", "middle_name", "last_name" };
+            table.Name = "Request";
+            table.NameColumns = new List<string> {  };
 
             string connectionString = ConfigurationManager.ConnectionStrings["TestConnection"].ConnectionString;
             using (var con = new SqlConnection(connectionString))
@@ -24,7 +25,9 @@ namespace DatabaseScriptsGenerator
                         var ds = new DataSet();
                         da.Fill(ds);
                         table.ColumnDetails = ds.Tables[1];
-                        table.KeyColumns = ds.Tables[5].Rows[0][2].ToString();
+                        var identityColumn = ds.Tables[2].Rows[0][0].ToString();
+                        table.IdentityColumn = identityColumn.StartsWith("No identity") ? string.Empty : identityColumn;
+                        table.KeyColumns = ds.Tables[5].Rows[0][2].ToString().Split(',').Select(s => s.Trim(' ')).ToArray();
                     }
                 }
             }

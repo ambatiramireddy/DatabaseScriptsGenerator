@@ -1,171 +1,187 @@
-IF EXISTS (SELECT * FROM sysobjects WHERE id = object_id('[dbo].[usp_Select_User]') and type = 'p')
-DROP PROC [dbo].[usp_Select_User]
+IF EXISTS (SELECT * FROM sysobjects WHERE id = object_id('[dbo].[usp_Select_Request]') and type = 'p')
+DROP PROC [dbo].[usp_Select_Request]
 GO
 
-IF EXISTS (SELECT * FROM sysobjects WHERE id = object_id('[dbo].[usp_SelectAll_Users]') and type = 'p')
-DROP PROC [dbo].[usp_SelectAll_Users]
+IF EXISTS (SELECT * FROM sysobjects WHERE id = object_id('[dbo].[usp_SelectAll_Requests]') and type = 'p')
+DROP PROC [dbo].[usp_SelectAll_Requests]
 GO
 
-IF EXISTS (SELECT * FROM sysobjects WHERE id = object_id('[dbo].[usp_Select_User_IdNamePairs]') and type = 'p')
-DROP PROC [dbo].[usp_Select_User_IdNamePairs]
+
+IF EXISTS (SELECT * FROM sysobjects WHERE id = object_id('[dbo].[usp_Insert_Request]') and type = 'p')
+DROP PROC [dbo].[usp_Insert_Request]
 GO
 
-IF EXISTS (SELECT * FROM sysobjects WHERE id = object_id('[dbo].[usp_Insert_User]') and type = 'p')
-DROP PROC [dbo].[usp_Insert_User]
+IF EXISTS (SELECT * FROM sysobjects WHERE id = object_id('[dbo].[usp_Update_Request]') and type = 'p')
+DROP PROC [dbo].[usp_Update_Request]
 GO
 
-IF EXISTS (SELECT * FROM sysobjects WHERE id = object_id('[dbo].[usp_Update_User]') and type = 'p')
-DROP PROC [dbo].[usp_Update_User]
+IF EXISTS (SELECT * FROM sysobjects WHERE id = object_id('[dbo].[usp_Delete_Request]') and type = 'p')
+DROP PROC [dbo].[usp_Delete_Request]
 GO
 
-IF EXISTS (SELECT * FROM sysobjects WHERE id = object_id('[dbo].[usp_Delete_User]') and type = 'p')
-DROP PROC [dbo].[usp_Delete_User]
+IF EXISTS (SELECT * FROM systypes WHERE name = 'tt_Request')
+DROP TYPE [dbo].[tt_Request]
 GO
 
-IF EXISTS (SELECT * FROM systypes WHERE name = 'tt_User')
-DROP TYPE [dbo].[tt_User]
-GO
-
-CREATE TYPE [dbo].[tt_User] AS TABLE(
-	[id] nvarchar(50) NOT NULL,
-	[first_name] nvarchar(50) NOT NULL,
-	[middle_name] nvarchar(50) NULL,
-	[last_name] nvarchar(50) NOT NULL,
-	[mobile] char(10) NOT NULL,
-	[email] nvarchar(50) NOT NULL,
-	[account_balance] money NOT NULL,
-	[pending_request_charges] money NOT NULL,
-	[created_date] datetime NULL,
-	[modified_date] datetime NULL
+CREATE TYPE [dbo].[tt_Request] AS TABLE(
+	[id] uniqueidentifier NOT NULL,
+	[user_id] nvarchar(50) NOT NULL,
+	[request_level] tinyint NOT NULL,
+	[screen_id] int NOT NULL,
+	[status_code] tinyint NOT NULL,
+	[status_desc] nvarchar(500) NULL,
+	[message_type] tinyint NOT NULL,
+	[message] nvarchar(2000) NULL,
+	[image] varbinary NULL,
+	[date] date NOT NULL,
+	[scheduled_start_time_minutes] smallint NOT NULL,
+	[scheduled_duration_seconds] smallint NOT NULL,
+	[actual_start_time_minutes] smallint NOT NULL,
+	[actual_duration_seconds] smallint NOT NULL,
+	[request_charges] money NOT NULL,
+	[can_adjust_request_start_time] bit NOT NULL
 )
 GO
 
-CREATE PROC [dbo].[usp_Select_User]
-@id nvarchar(50)
+CREATE PROC [dbo].[usp_Select_Request]
+@id uniqueidentifier
 AS
 BEGIN
 
 	SELECT 
 		[id],
-		[first_name],
-		[middle_name],
-		[last_name],
-		[mobile],
-		[email],
-		[account_balance],
-		[pending_request_charges],
-		[created_date],
-		[modified_date]
-	FROM [dbo].[User]
+		[user_id],
+		[request_level],
+		[screen_id],
+		[status_code],
+		[status_desc],
+		[message_type],
+		[message],
+		[image],
+		[date],
+		[scheduled_start_time_minutes],
+		[scheduled_duration_seconds],
+		[actual_start_time_minutes],
+		[actual_duration_seconds],
+		[request_charges],
+		[can_adjust_request_start_time]
+	FROM [dbo].[Request]
 	WHERE id = @id
 
 END
 GO
 
-CREATE PROC [dbo].[usp_SelectAll_Users]
+CREATE PROC [dbo].[usp_SelectAll_Requests]
 AS
 BEGIN
 
 	SELECT 
 		[id],
-		[first_name],
-		[middle_name],
-		[last_name],
-		[mobile],
-		[email],
-		[account_balance],
-		[pending_request_charges],
-		[created_date],
-		[modified_date]
-	FROM [dbo].[User]
+		[user_id],
+		[request_level],
+		[screen_id],
+		[status_code],
+		[status_desc],
+		[message_type],
+		[message],
+		[image],
+		[date],
+		[scheduled_start_time_minutes],
+		[scheduled_duration_seconds],
+		[actual_start_time_minutes],
+		[actual_duration_seconds],
+		[request_charges],
+		[can_adjust_request_start_time]
+	FROM [dbo].[Request]
 
 END
 GO
 
-CREATE PROC [dbo].[usp_Select_User_IdNamePairs]
+CREATE PROC [dbo].[usp_Insert_Request]
+@Request tt_Request READONLY
 AS
 BEGIN
 
-	SELECT id, ([first_name] + ' ' + [middle_name] + ' ' + [last_name]) as name
-	FROM [dbo].[User]
+	DECLARE @guid uniqueidentifier = NEWID()
 
-END
-GO
-
-CREATE PROC [dbo].[usp_Insert_User]
-@User tt_User READONLY
-AS
-BEGIN
-    
-	DECLARE @today datetime = GETUTCDATE()
-	
-	INSERT INTO [dbo].[User](
+	INSERT INTO [dbo].[Request](
 		[id],
-		[first_name],
-		[middle_name],
-		[last_name],
-		[mobile],
-		[email],
-		[account_balance],
-		[pending_request_charges],
-		[created_date],
-		[modified_date])
+		[user_id],
+		[request_level],
+		[screen_id],
+		[status_code],
+		[status_desc],
+		[message_type],
+		[message],
+		[image],
+		[date],
+		[scheduled_start_time_minutes],
+		[scheduled_duration_seconds],
+		[actual_start_time_minutes],
+		[actual_duration_seconds],
+		[request_charges],
+		[can_adjust_request_start_time])
 	SELECT 
-		[id],
-		[first_name],
-		[middle_name],
-		[last_name],
-		[mobile],
-		[email],
-		[account_balance],
-		[pending_request_charges],
-		@today,
-		@today
-	FROM @User
+		@guid,
+		[user_id],
+		[request_level],
+		[screen_id],
+		[status_code],
+		[status_desc],
+		[message_type],
+		[message],
+		[image],
+		[date],
+		[scheduled_start_time_minutes],
+		[scheduled_duration_seconds],
+		[actual_start_time_minutes],
+		[actual_duration_seconds],
+		[request_charges],
+		[can_adjust_request_start_time]
+	FROM @Request
+
+	SELECT @guid
 
 END        
 GO
 
-CREATE PROC [dbo].[usp_Update_User]
-@User tt_User READONLY
+CREATE PROC [dbo].[usp_Update_Request]
+@Request tt_Request READONLY
 AS
 BEGIN
 
-	UPDATE [dbo].[User]
+	UPDATE [dbo].[Request]
 	SET	
-		[first_name] = s.[first_name],
-		[middle_name] = s.[middle_name],
-		[last_name] = s.[last_name],
-		[mobile] = s.[mobile],
-		[email] = s.[email],
-		[account_balance] = s.[account_balance],
-		[pending_request_charges] = s.[pending_request_charges],
-		[modified_date] = GETUTCDATE()
-	FROM [dbo].[User] AS t
-	INNER JOIN @User AS s
+		[user_id] = s.[user_id],
+		[request_level] = s.[request_level],
+		[screen_id] = s.[screen_id],
+		[status_code] = s.[status_code],
+		[status_desc] = s.[status_desc],
+		[message_type] = s.[message_type],
+		[message] = s.[message],
+		[image] = s.[image],
+		[date] = s.[date],
+		[scheduled_start_time_minutes] = s.[scheduled_start_time_minutes],
+		[scheduled_duration_seconds] = s.[scheduled_duration_seconds],
+		[actual_start_time_minutes] = s.[actual_start_time_minutes],
+		[actual_duration_seconds] = s.[actual_duration_seconds],
+		[request_charges] = s.[request_charges],
+		[can_adjust_request_start_time] = s.[can_adjust_request_start_time]
+	FROM [dbo].[Request] AS t
+	INNER JOIN @Request AS s
 	ON t.id = s.id
 
 END        
 GO
 
-CREATE PROC [dbo].[usp_Delete_User]
-@id nvarchar(50)
+CREATE PROC [dbo].[usp_Delete_Request]
+@id uniqueidentifier
 AS
 BEGIN
 
-	DELETE FROM [dbo].[FavoriteMessageTemplate] WHERE [user_id] = @id
+	DELETE FROM [dbo].[ScreenSlotBooked] WHERE [request_id] = @id
 
-	DELETE FROM [dbo].[FavoriteScreen] WHERE [user_id] = @id
-
-	DELETE FROM [dbo].[Login] WHERE [user_id] = @id
-
-	DELETE FROM [dbo].[Request] WHERE [user_id] = @id
-
-	DELETE FROM [dbo].[Screen] WHERE [owner_id] = @id
-
-	DELETE FROM [dbo].[ScreenRating] WHERE [user_id] = @id
-
-	DELETE FROM [dbo].[User] WHERE id = @id
+	DELETE FROM [dbo].[Request] WHERE id = @id
 
 END        
 GO

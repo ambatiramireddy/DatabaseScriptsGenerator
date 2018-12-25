@@ -49,67 +49,109 @@ namespace DatabaseScriptsGenerator.Templates
             
             #line default
             #line hidden
-            this.Write(" READONLY\r\nAS\r\nBEGIN\r\n    ");
+            this.Write(" READONLY\r\nAS\r\nBEGIN\r\n\r\n");
             
-            #line 6 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\InsertProc.tt"
+            #line 7 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\InsertProc.tt"
  if(HasCreatedDateColumn){
             
             #line default
             #line hidden
-            this.Write("\r\n\tDECLARE @today datetime = GETUTCDATE()\r\n\t");
+            this.Write("\tDECLARE @today datetime = GETUTCDATE()\r\n");
             
             #line 9 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\InsertProc.tt"
 }
             
             #line default
             #line hidden
+            
+            #line 10 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\InsertProc.tt"
+ if(IsKeyColumnGuidColumn){
+            
+            #line default
+            #line hidden
+            this.Write("\tDECLARE @guid uniqueidentifier = NEWID()\r\n");
+            
+            #line 12 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\InsertProc.tt"
+}
+            
+            #line default
+            #line hidden
             this.Write("\r\n\tINSERT INTO [");
             
-            #line 11 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\InsertProc.tt"
+            #line 14 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\InsertProc.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(this.Owner));
             
             #line default
             #line hidden
             this.Write("].[");
             
-            #line 11 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\InsertProc.tt"
+            #line 14 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\InsertProc.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(this.TableName));
             
             #line default
             #line hidden
             this.Write("](");
             
-            #line 11 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\InsertProc.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(this.AllColumnList));
+            #line 14 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\InsertProc.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture(this.InsertIntoColumnList));
             
             #line default
             #line hidden
             this.Write(")\r\n\tSELECT ");
             
-            #line 12 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\InsertProc.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(this.InsertColumnList));
+            #line 15 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\InsertProc.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture(this.InsertSelectColumnList));
             
             #line default
             #line hidden
             this.Write("\r\n\tFROM @");
             
-            #line 13 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\InsertProc.tt"
+            #line 16 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\InsertProc.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(this.TableName));
             
             #line default
             #line hidden
-            this.Write("\r\n\r\nEND        \r\nGO\r\n\r\n");
+            this.Write("\r\n\r\n");
+            
+            #line 18 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\InsertProc.tt"
+ if(!string.IsNullOrEmpty(IdentityColumn)){
+            
+            #line default
+            #line hidden
+            this.Write("\tSELECT SCOPE_IDENTITY()\r\n");
+            
+            #line 20 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\InsertProc.tt"
+}
+            
+            #line default
+            #line hidden
+            
+            #line 21 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\InsertProc.tt"
+ if(IsKeyColumnGuidColumn){
+            
+            #line default
+            #line hidden
+            this.Write("\tSELECT @guid\r\n");
+            
+            #line 23 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\InsertProc.tt"
+}
+            
+            #line default
+            #line hidden
+            this.Write("\r\nEND        \r\nGO\r\n\r\n");
             return this.GenerationEnvironment.ToString();
         }
         
-        #line 23 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\InsertProc.tt"
+        #line 33 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\InsertProc.tt"
 
 public string Owner { get; set; }
 public string TableName { get; set; }
 public string InsertProcName { get; set; }
-public string AllColumnList { get; set; }
-public string InsertColumnList { get; set; }
+public string InsertIntoColumnList { get; set; }
+public string InsertSelectColumnList { get; set; }
+public string IdentityColumn { get; set; }
 public bool HasCreatedDateColumn { get; set; }
+public bool IsKeyColumnGuidColumn { get; set; }
 
         
         #line default

@@ -1,0 +1,119 @@
+﻿
+using AddAppAPI.Helpers;
+using AddAppAPI.Models;
+using System.Collections.Generic;
+using System.Net;
+using System.Threading.Tasks;
+using System.Web.Http;
+
+namespace AddAppAPI.Controllers
+{
+    [RoutePrefix("api/<#= this.TableName #>")]
+    public class <#= this.TableName #>Controller : ApiController
+    {
+        private ISqlHelper<<#= this.TableName #>> sqlHelper;
+
+        public <#= this.TableName #>Controller()
+        {
+            this.sqlHelper = new SqlHelper<<#= this.TableName #>>();
+        }
+
+        public <#= this.TableName #>Controller(ISqlHelper<<#= this.TableName #>> sqlHelper)
+        {
+            this.sqlHelper = sqlHelper;
+        }
+
+        // GET: api/<#= this.TableName #>
+        public async Task<IHttpActionResult> Get()
+        {
+            var <#= this.PluralCaseTableName #> = await this.sqlHelper.SelectAllAsync();
+            return Content(HttpStatusCode.OK, <#= this.PluralCaseTableName #>);
+        }
+
+        // GET: api/<#= this.TableName #>/5
+        public async Task<IHttpActionResult> Get(<#= this.KeyColumnType #> id)
+        {
+            var <#= this.LowerCaseTableName #> = await this.sqlHelper.SelectOneAsync(new Dictionary<string, object> { { "id", id } });
+            if (<#= this.LowerCaseTableName #> != null)
+            {
+                return Content(HttpStatusCode.OK, <#= this.LowerCaseTableName #>);
+            }
+            else
+            {
+                var message = string.Format("No <#= this.LowerCaseTableName #> found for <#= this.LowerCaseTableName #> id:{0}", id);
+                return Content(HttpStatusCode.NotFound, message);
+            }
+        }
+<#if(HasNameColumn){#>
+
+        // GET: api/<#= this.TableName #>/GetIdNamepairs
+        [HttpGet]
+        [Route("GetIdNamepairs")]
+        public async Task<IHttpActionResult> GetIdNamepairs()
+        {
+            var idNamePairs = await this.sqlHelper.SelectIdNamePairsAsync<<#= this.KeyColumnType #>, string>();
+            return Content(HttpStatusCode.OK, idNamePairs);
+        }
+
+<#}else{#>
+
+<#}#>
+        // POST: api/<#= this.TableName #>
+        public async Task<IHttpActionResult> Post(<#= this.TableName #> <#= this.LowerCaseTableName #>)
+        {
+            <#= this.KeyColumnType #> id = await this.sqlHelper.InsertAsync<<#= this.KeyColumnType #>>(<#= this.LowerCaseTableName #>);
+            return Content(HttpStatusCode.OK, id);
+        }
+
+        // PUT: api/<#= this.TableName #>/5
+        public async Task<IHttpActionResult> Put(<#= this.KeyColumnType #> id, <#= this.TableName #> <#= this.LowerCaseTableName #>)
+        {
+            if (id != <#= this.LowerCaseTableName #>.Id)
+            {
+                var message = string.Format("id:'{0}' not matching with <#= this.LowerCaseTableName #> id:'{1}'", id, <#= this.LowerCaseTableName #>.Id);
+                return Content(HttpStatusCode.BadRequest, message);
+            }
+
+            var success = await this.sqlHelper.UpdateAsync(<#= this.LowerCaseTableName #>);
+            if (success)
+            {
+                return Content(HttpStatusCode.OK, id);
+            }
+            else
+            {
+                var message = string.Format("No <#= this.LowerCaseTableName #> found for <#= this.LowerCaseTableName #> id:'{0}'", id);
+                return Content(HttpStatusCode.NotFound, message);
+            }
+        }
+
+        // DELETE: api/<#= this.TableName #>/5
+        public async Task<IHttpActionResult> Delete(<#= this.KeyColumnType #> id)
+        {
+            var success = await this.sqlHelper.DeleteAsync(new Dictionary<string, object> { { "id", id } });
+            if (success)
+            {
+                return Content(HttpStatusCode.OK, id);
+            }
+            else
+            {
+                var message = string.Format("No <#= this.LowerCaseTableName #> found for <#= this.LowerCaseTableName #> id:{0}", id);
+                return Content(HttpStatusCode.NotFound, message);
+            }
+        }
+    }
+}
+
+
+<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="DatabaseScriptsGenerator" #>
+<#+
+public string TableName { get; set; }
+public string LowerCaseTableName { get; set; }
+public string PluralCaseTableName { get; set; }
+public string KeyColumnType { get; set; }
+public bool HasNameColumn { get; set; }
+#>

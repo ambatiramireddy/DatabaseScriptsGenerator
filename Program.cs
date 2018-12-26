@@ -8,14 +8,15 @@ namespace DatabaseScriptsGenerator
 {
     class Program
     {
+        static string connectionString = ConfigurationManager.ConnectionStrings["TestConnection"].ConnectionString;
+
         static void Main(string[] args)
         {
             SqlTable table = new SqlTable();
             table.Owner = "dbo";
-            table.Name = "Request";
-            table.NameColumns = new List<string> {  };
+            table.Name = "Country";
+            table.NameColumns = new List<string> { "name" };
 
-            string connectionString = ConfigurationManager.ConnectionStrings["TestConnection"].ConnectionString;
             using (var con = new SqlConnection(connectionString))
             {
                 using (var cmd = new SqlCommand($"exec sp_help '{table.Owner}.{table.Name}'", con))
@@ -32,20 +33,49 @@ namespace DatabaseScriptsGenerator
                 }
             }
 
+            DataTable dt = null;
+            FindForeignKeyRelationHeirarchy(table.Name, ref dt);
+            table.ForeignKeyRelations = dt;
+
+            table.GenerateProcs();
+        }
+
+        static void FindForeignKeyRelationHeirarchy(string tableName, ref DataTable dt)
+        {
             using (var con = new SqlConnection(connectionString))
             {
-                using (var cmd = new SqlCommand($"exec sp_fkeys '{table.Name}'", con))
+                using (var cmd = new SqlCommand($"exec sp_fkeys '{tableName}'", con))
                 {
                     using (var da = new SqlDataAdapter(cmd))
                     {
                         var ds = new DataSet();
                         da.Fill(ds);
-                        table.ForeignKeyRelations = ds.Tables[0];
+
+                        if (dt == null)
+                        {
+                            dt = ds.Tables[0].Copy();
+                            foreach (string fkTableName in ds.Tables[0].AsEnumerable().Select(row => row[6].ToString()).Distinct())
+                            {
+                                FindForeignKeyRelationHeirarchy(fkTableName, ref dt);
+                            }
+                        }
+                        else
+                        {
+                            foreach (DataRow row in ds.Tables[0].Rows)
+                            {
+                                var newRow = dt.NewRow();
+                                newRow.ItemArray = row.ItemArray;
+                                dt.Rows.Add(newRow);
+                            }
+
+                            foreach (string fkTableName in ds.Tables[0].AsEnumerable().Select(row => row[6].ToString()).Distinct())
+                            {
+                                FindForeignKeyRelationHeirarchy(fkTableName, ref dt);
+                            }
+                        }
                     }
                 }
             }
-
-            table.GenerateProcs();
         }
     }
 }

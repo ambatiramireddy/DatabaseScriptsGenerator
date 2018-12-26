@@ -1,187 +1,123 @@
-IF EXISTS (SELECT * FROM sysobjects WHERE id = object_id('[dbo].[usp_Select_Request]') and type = 'p')
-DROP PROC [dbo].[usp_Select_Request]
+IF EXISTS (SELECT * FROM sysobjects WHERE id = object_id('[dbo].[usp_Select_Country]') and type = 'p')
+DROP PROC [dbo].[usp_Select_Country]
 GO
 
-IF EXISTS (SELECT * FROM sysobjects WHERE id = object_id('[dbo].[usp_SelectAll_Requests]') and type = 'p')
-DROP PROC [dbo].[usp_SelectAll_Requests]
+IF EXISTS (SELECT * FROM sysobjects WHERE id = object_id('[dbo].[usp_SelectAll_Countries]') and type = 'p')
+DROP PROC [dbo].[usp_SelectAll_Countries]
 GO
 
-
-IF EXISTS (SELECT * FROM sysobjects WHERE id = object_id('[dbo].[usp_Insert_Request]') and type = 'p')
-DROP PROC [dbo].[usp_Insert_Request]
+IF EXISTS (SELECT * FROM sysobjects WHERE id = object_id('[dbo].[usp_Select_Country_IdNamePairs]') and type = 'p')
+DROP PROC [dbo].[usp_Select_Country_IdNamePairs]
 GO
 
-IF EXISTS (SELECT * FROM sysobjects WHERE id = object_id('[dbo].[usp_Update_Request]') and type = 'p')
-DROP PROC [dbo].[usp_Update_Request]
+IF EXISTS (SELECT * FROM sysobjects WHERE id = object_id('[dbo].[usp_Insert_Country]') and type = 'p')
+DROP PROC [dbo].[usp_Insert_Country]
 GO
 
-IF EXISTS (SELECT * FROM sysobjects WHERE id = object_id('[dbo].[usp_Delete_Request]') and type = 'p')
-DROP PROC [dbo].[usp_Delete_Request]
+IF EXISTS (SELECT * FROM sysobjects WHERE id = object_id('[dbo].[usp_Update_Country]') and type = 'p')
+DROP PROC [dbo].[usp_Update_Country]
 GO
 
-IF EXISTS (SELECT * FROM systypes WHERE name = 'tt_Request')
-DROP TYPE [dbo].[tt_Request]
+IF EXISTS (SELECT * FROM sysobjects WHERE id = object_id('[dbo].[usp_Delete_Country]') and type = 'p')
+DROP PROC [dbo].[usp_Delete_Country]
 GO
 
-CREATE TYPE [dbo].[tt_Request] AS TABLE(
-	[id] uniqueidentifier NOT NULL,
-	[user_id] nvarchar(50) NOT NULL,
-	[request_level] tinyint NOT NULL,
-	[screen_id] int NOT NULL,
-	[status_code] tinyint NOT NULL,
-	[status_desc] nvarchar(500) NULL,
-	[message_type] tinyint NOT NULL,
-	[message] nvarchar(2000) NULL,
-	[image] varbinary NULL,
-	[date] date NOT NULL,
-	[scheduled_start_time_minutes] smallint NOT NULL,
-	[scheduled_duration_seconds] smallint NOT NULL,
-	[actual_start_time_minutes] smallint NOT NULL,
-	[actual_duration_seconds] smallint NOT NULL,
-	[request_charges] money NOT NULL,
-	[can_adjust_request_start_time] bit NOT NULL
+IF EXISTS (SELECT * FROM systypes WHERE name = 'tt_Country')
+DROP TYPE [dbo].[tt_Country]
+GO
+
+CREATE TYPE [dbo].[tt_Country] AS TABLE(
+	[id] int NOT NULL,
+	[name] nvarchar(100) NOT NULL
 )
 GO
 
-CREATE PROC [dbo].[usp_Select_Request]
-@id uniqueidentifier
+CREATE PROC [dbo].[usp_Select_Country]
+@id int
 AS
 BEGIN
 
 	SELECT 
 		[id],
-		[user_id],
-		[request_level],
-		[screen_id],
-		[status_code],
-		[status_desc],
-		[message_type],
-		[message],
-		[image],
-		[date],
-		[scheduled_start_time_minutes],
-		[scheduled_duration_seconds],
-		[actual_start_time_minutes],
-		[actual_duration_seconds],
-		[request_charges],
-		[can_adjust_request_start_time]
-	FROM [dbo].[Request]
+		[name]
+	FROM [dbo].[Country]
 	WHERE id = @id
 
 END
 GO
 
-CREATE PROC [dbo].[usp_SelectAll_Requests]
+CREATE PROC [dbo].[usp_SelectAll_Countries]
 AS
 BEGIN
 
 	SELECT 
 		[id],
-		[user_id],
-		[request_level],
-		[screen_id],
-		[status_code],
-		[status_desc],
-		[message_type],
-		[message],
-		[image],
-		[date],
-		[scheduled_start_time_minutes],
-		[scheduled_duration_seconds],
-		[actual_start_time_minutes],
-		[actual_duration_seconds],
-		[request_charges],
-		[can_adjust_request_start_time]
-	FROM [dbo].[Request]
+		[name]
+	FROM [dbo].[Country]
 
 END
 GO
 
-CREATE PROC [dbo].[usp_Insert_Request]
-@Request tt_Request READONLY
+CREATE PROC [dbo].[usp_Select_Country_IdNamePairs]
 AS
 BEGIN
 
-	DECLARE @guid uniqueidentifier = NEWID()
+	SELECT [id], ([name]) as [name]
+	FROM [dbo].[Country]
 
-	INSERT INTO [dbo].[Request](
-		[id],
-		[user_id],
-		[request_level],
-		[screen_id],
-		[status_code],
-		[status_desc],
-		[message_type],
-		[message],
-		[image],
-		[date],
-		[scheduled_start_time_minutes],
-		[scheduled_duration_seconds],
-		[actual_start_time_minutes],
-		[actual_duration_seconds],
-		[request_charges],
-		[can_adjust_request_start_time])
+END
+GO
+
+CREATE PROC [dbo].[usp_Insert_Country]
+@Country tt_Country READONLY
+AS
+BEGIN
+
+
+	INSERT INTO [dbo].[Country](
+		[name])
 	SELECT 
-		@guid,
-		[user_id],
-		[request_level],
-		[screen_id],
-		[status_code],
-		[status_desc],
-		[message_type],
-		[message],
-		[image],
-		[date],
-		[scheduled_start_time_minutes],
-		[scheduled_duration_seconds],
-		[actual_start_time_minutes],
-		[actual_duration_seconds],
-		[request_charges],
-		[can_adjust_request_start_time]
-	FROM @Request
+		[name]
+	FROM @Country
 
-	SELECT @guid
+	SELECT SCOPE_IDENTITY()
 
 END        
 GO
 
-CREATE PROC [dbo].[usp_Update_Request]
-@Request tt_Request READONLY
+CREATE PROC [dbo].[usp_Update_Country]
+@Country tt_Country READONLY
 AS
 BEGIN
 
-	UPDATE [dbo].[Request]
+	UPDATE [dbo].[Country]
 	SET	
-		[user_id] = s.[user_id],
-		[request_level] = s.[request_level],
-		[screen_id] = s.[screen_id],
-		[status_code] = s.[status_code],
-		[status_desc] = s.[status_desc],
-		[message_type] = s.[message_type],
-		[message] = s.[message],
-		[image] = s.[image],
-		[date] = s.[date],
-		[scheduled_start_time_minutes] = s.[scheduled_start_time_minutes],
-		[scheduled_duration_seconds] = s.[scheduled_duration_seconds],
-		[actual_start_time_minutes] = s.[actual_start_time_minutes],
-		[actual_duration_seconds] = s.[actual_duration_seconds],
-		[request_charges] = s.[request_charges],
-		[can_adjust_request_start_time] = s.[can_adjust_request_start_time]
-	FROM [dbo].[Request] AS t
-	INNER JOIN @Request AS s
+		[name] = s.[name]
+	FROM [dbo].[Country] AS t
+	INNER JOIN @Country AS s
 	ON t.id = s.id
 
 END        
 GO
 
-CREATE PROC [dbo].[usp_Delete_Request]
-@id uniqueidentifier
+CREATE PROC [dbo].[usp_Delete_Country]
+@id int
 AS
 BEGIN
 
-	DELETE FROM [dbo].[ScreenSlotBooked] WHERE [request_id] = @id
-
-	DELETE FROM [dbo].[Request] WHERE id = @id
+	DELETE [dbo].[Country]
+	FROM [dbo].[Country]
+	INNER JOIN [dbo].[State] ON [dbo].[Country].[id] = [dbo].[State].[country_id]
+	INNER JOIN [dbo].[City] ON [dbo].[State].[id] = [dbo].[City].[state_id]
+	INNER JOIN [dbo].[Area] ON [dbo].[City].[id] = [dbo].[Area].[city_id]
+	INNER JOIN [dbo].[Screen] ON [dbo].[Area].[id] = [dbo].[Screen].[area_id]
+	INNER JOIN [dbo].[FavoriteScreen] ON [dbo].[Screen].[id] = [dbo].[FavoriteScreen].[screen_id]
+	INNER JOIN [dbo].[Request] ON [dbo].[Screen].[id] = [dbo].[Request].[screen_id]
+	INNER JOIN [dbo].[ScreenCharge] ON [dbo].[Screen].[id] = [dbo].[ScreenCharge].[screen_id]
+	INNER JOIN [dbo].[ScreenOwnerMessage] ON [dbo].[Screen].[id] = [dbo].[ScreenOwnerMessage].[screen_id]
+	INNER JOIN [dbo].[ScreenRating] ON [dbo].[Screen].[id] = [dbo].[ScreenRating].[screen_id]
+	INNER JOIN [dbo].[ScreenSlotBooked] ON [dbo].[Request].[id] = [dbo].[ScreenSlotBooked].[request_id]
+	WHERE [dbo].[Country].[id] = @id
 
 END        
 GO

@@ -49,21 +49,14 @@ namespace DatabaseScriptsGenerator.Templates
             
             #line default
             #line hidden
-            this.Write("\r\n\tFROM [");
+            this.Write("\r\n\tFROM ");
             
             #line 8 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\SelectProc.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(this.Owner));
+            this.Write(this.ToStringHelper.ToStringWithCulture(this.FullTableName));
             
             #line default
             #line hidden
-            this.Write("].[");
-            
-            #line 8 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\SelectProc.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(this.TableName));
-            
-            #line default
-            #line hidden
-            this.Write("]\r\n\tWHERE ");
+            this.Write("\r\n\tWHERE ");
             
             #line 9 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\SelectProc.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(this.WhereClause));
@@ -76,8 +69,7 @@ namespace DatabaseScriptsGenerator.Templates
         
         #line 19 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\SelectProc.tt"
 
-public string Owner { get; set; }
-public string TableName { get; set; }
+public string FullTableName { get; set; }
 public string SelectProcName { get; set; }
 public string AllColumnList { get; set; }
 public string keyColumnAndTypeList { get; set; }

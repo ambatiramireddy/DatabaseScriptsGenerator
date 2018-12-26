@@ -76,21 +76,14 @@ namespace DatabaseScriptsGenerator.Templates
             
             #line default
             #line hidden
-            this.Write("\r\n\tINSERT INTO [");
+            this.Write("\r\n\tINSERT INTO ");
             
             #line 14 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\InsertProc.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(this.Owner));
+            this.Write(this.ToStringHelper.ToStringWithCulture(this.FullTableName));
             
             #line default
             #line hidden
-            this.Write("].[");
-            
-            #line 14 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\InsertProc.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(this.TableName));
-            
-            #line default
-            #line hidden
-            this.Write("](");
+            this.Write("(");
             
             #line 14 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\InsertProc.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(this.InsertIntoColumnList));
@@ -144,8 +137,8 @@ namespace DatabaseScriptsGenerator.Templates
         
         #line 33 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\InsertProc.tt"
 
-public string Owner { get; set; }
 public string TableName { get; set; }
+public string FullTableName { get; set; }
 public string InsertProcName { get; set; }
 public string InsertIntoColumnList { get; set; }
 public string InsertSelectColumnList { get; set; }

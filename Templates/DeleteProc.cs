@@ -42,45 +42,10 @@ namespace DatabaseScriptsGenerator.Templates
             
             #line default
             #line hidden
-            this.Write("\r\nAS\r\nBEGIN\r\n\r\n");
+            this.Write("\r\nAS\r\nBEGIN\r\n\r\n\t");
             
             #line 7 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\DeleteProc.tt"
-foreach(var deleteStatement in ReferenceTableDeletes){
-            
-            #line default
-            #line hidden
-            this.Write("\t");
-            
-            #line 8 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\DeleteProc.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(deleteStatement));
-            
-            #line default
-            #line hidden
-            this.Write("\r\n\r\n");
-            
-            #line 10 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\DeleteProc.tt"
-}
-            
-            #line default
-            #line hidden
-            this.Write("\tDELETE FROM [");
-            
-            #line 11 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\DeleteProc.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(this.Owner));
-            
-            #line default
-            #line hidden
-            this.Write("].[");
-            
-            #line 11 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\DeleteProc.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(this.TableName));
-            
-            #line default
-            #line hidden
-            this.Write("] WHERE ");
-            
-            #line 11 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\DeleteProc.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(this.WhereClause));
+            this.Write(this.ToStringHelper.ToStringWithCulture(this.DeleteStatement));
             
             #line default
             #line hidden
@@ -88,14 +53,11 @@ foreach(var deleteStatement in ReferenceTableDeletes){
             return this.GenerationEnvironment.ToString();
         }
         
-        #line 21 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\DeleteProc.tt"
+        #line 17 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\DeleteProc.tt"
 
-public string Owner { get; set; }
-public string TableName { get; set; }
 public string DeleteProcName { get; set; }
 public string keyColumnAndTypeList { get; set; }
-public string WhereClause { get; set; }
-public string[] ReferenceTableDeletes { get; set; }
+public string DeleteStatement { get; set; }
 
         
         #line default

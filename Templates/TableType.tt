@@ -10,8 +10,6 @@ GO
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Collections.Generic" #>
 <#+
-public string Owner { get; set; }
-public string TableName { get; set; }
 public string TableTypeName { get; set; }
 public string AllColumnAndTypeList { get; set; }
 #>

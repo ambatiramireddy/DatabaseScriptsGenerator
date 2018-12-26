@@ -11,7 +11,7 @@ BEGIN
 	DECLARE @guid uniqueidentifier = NEWID()
 <#}#>
 
-	INSERT INTO [<#= this.Owner #>].[<#= this.TableName #>](<#= this.InsertIntoColumnList #>)
+	INSERT INTO <#= this.FullTableName #>(<#= this.InsertIntoColumnList #>)
 	SELECT <#= this.InsertSelectColumnList #>
 	FROM @<#= this.TableName #>
 
@@ -31,8 +31,8 @@ GO
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Collections.Generic" #>
 <#+
-public string Owner { get; set; }
 public string TableName { get; set; }
+public string FullTableName { get; set; }
 public string InsertProcName { get; set; }
 public string InsertIntoColumnList { get; set; }
 public string InsertSelectColumnList { get; set; }

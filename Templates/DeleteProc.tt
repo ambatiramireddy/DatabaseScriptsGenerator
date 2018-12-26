@@ -4,11 +4,7 @@ CREATE PROC <#= this.DeleteProcName #>
 AS
 BEGIN
 
-<#foreach(var deleteStatement in ReferenceTableDeletes){#>
-	<#= deleteStatement #>
-
-<#}#>
-	DELETE FROM [<#= this.Owner #>].[<#= this.TableName #>] WHERE <#= this.WhereClause #>
+	<#= this.DeleteStatement #>
 
 END        
 GO
@@ -19,10 +15,7 @@ GO
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Collections.Generic" #>
 <#+
-public string Owner { get; set; }
-public string TableName { get; set; }
 public string DeleteProcName { get; set; }
 public string keyColumnAndTypeList { get; set; }
-public string WhereClause { get; set; }
-public string[] ReferenceTableDeletes { get; set; }
+public string DeleteStatement { get; set; }
 #>

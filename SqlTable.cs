@@ -11,6 +11,7 @@ namespace DatabaseScriptsGenerator
 {
     public class SqlTable
     {
+        string fullTableName;
         List<ColumnInfo> allColumns;
         string nonKeyColumnList;
         string allColumnList;
@@ -21,7 +22,7 @@ namespace DatabaseScriptsGenerator
         string insertIntoColumnList;
         string insertSelectColumnList;
         bool hasCreatedDateColumn;
-        bool isKeyColumnGuidColumn;
+        ColumnInfo keyColumn;
 
         string updateColumnList;
         string keyColumnAndTypeList;
@@ -29,6 +30,9 @@ namespace DatabaseScriptsGenerator
         string[] referenceTableDeletes;
         string allColumnAndTypeList;
         string idNameColumnList;
+        string hardDeleteStatement;
+        string whereClauseForDelete;
+        
 
         public SqlTable()
         {
@@ -45,6 +49,7 @@ namespace DatabaseScriptsGenerator
 
         public void GenerateProcs()
         {
+            this.fullTableName = $"[{this.Owner}].[{this.Name}]";
             List<ColumnInfo> keyColumns = new List<ColumnInfo>();
             List<ColumnInfo> nonKeyColumns = new List<ColumnInfo>();
             foreach (DataRow row in ColumnDetails.Rows)
@@ -91,7 +96,7 @@ namespace DatabaseScriptsGenerator
 
             this.hasCreatedDateColumn = nonKeyColumns.Any(c => string.Join("", c.Name.Split(" _".ToCharArray())).ToLower().Equals("createddate"));
 
-            this.isKeyColumnGuidColumn = keyColumns[0].Type.Equals("uniqueidentifier");
+            this.keyColumn = keyColumns[0];
             var insertColumns = allColumns.Where(c => !c.Name.Equals(this.IdentityColumn)).ToArray();
             this.insertIntoColumnList = indentation + string.Join(twoTabSeparator, insertColumns.Select(c => $"[{c.Name}]"));
             this.insertSelectColumnList = indentation + string.Join(twoTabSeparator, insertColumns.Select(c =>
@@ -130,14 +135,8 @@ namespace DatabaseScriptsGenerator
             }).Where(s => s != string.Empty));
 
 
-            this.referenceTableDeletes = ForeignKeyRelations.AsEnumerable().Select(r =>
-            {
-                var fkTableOwner = r[5].ToString();
-                var fkTableName = r[6].ToString();
-                var fkColumnName = r[7].ToString();
-                var pkColumnName = r[3].ToString();
-                return $"DELETE FROM [{fkTableOwner}].[{fkTableName}] WHERE [{fkColumnName}] = @{pkColumnName}";
-            }).ToArray();
+            this.hardDeleteStatement = GenerateHardDeleteStatement(ForeignKeyRelations, keyColumns);
+            var softDeleteStatement = GenerateSoftDeleteStatement(ForeignKeyRelations, keyColumns);
 
             if (this.NameColumns.Count > 0)
             {
@@ -158,16 +157,13 @@ namespace DatabaseScriptsGenerator
 
             var tableType = new TableType()
             {
-                TableName = this.Name,
-                Owner = this.Owner,
                 TableTypeName = tableTypeName,
                 AllColumnAndTypeList = this.allColumnAndTypeList
             }.TransformText().TrimStart('\r', '\n');
 
             var selectProc = new SelectProc()
             {
-                TableName = this.Name,
-                Owner = this.Owner,
+                FullTableName = this.fullTableName,
                 SelectProcName = selectProcName,
                 AllColumnList = this.allColumnList,
                 keyColumnAndTypeList = this.keyColumnAndTypeList,
@@ -176,8 +172,7 @@ namespace DatabaseScriptsGenerator
 
             var selectAllProc = new SelectAllProc()
             {
-                TableName = this.Name,
-                Owner = this.Owner,
+                FullTableName = this.fullTableName,
                 SelectAllProcName = selectAllProcName,
                 AllColumnList = this.allColumnList,
             }.TransformText().TrimStart('\r', '\n');
@@ -185,19 +180,19 @@ namespace DatabaseScriptsGenerator
             var insertProc = new InsertProc()
             {
                 TableName = this.Name,
-                Owner = this.Owner,
+                FullTableName = this.fullTableName,
                 InsertProcName = insertProcName,
                 InsertIntoColumnList = this.insertIntoColumnList,
                 InsertSelectColumnList = this.insertSelectColumnList,
                 IdentityColumn = this.IdentityColumn,
                 HasCreatedDateColumn = this.hasCreatedDateColumn,
-                IsKeyColumnGuidColumn = this.isKeyColumnGuidColumn
+                IsKeyColumnGuidColumn = this.keyColumn.Type.Equals("uniqueidentifier")
             }.TransformText().TrimStart('\r', '\n');
 
             var updateProc = new UpdateProc()
             {
                 TableName = this.Name,
-                Owner = this.Owner,
+                FullTableName = this.fullTableName,
                 UpdateProcName = updateProcName,
                 UpdateColumnList = this.updateColumnList,
                 OnClause = this.onClause
@@ -205,12 +200,9 @@ namespace DatabaseScriptsGenerator
 
             var deleteProc = new DeleteProc()
             {
-                TableName = this.Name,
-                Owner = this.Owner,
                 DeleteProcName = deleteProcName,
                 keyColumnAndTypeList = this.keyColumnAndTypeList,
-                WhereClause = this.whereClause,
-                ReferenceTableDeletes = this.referenceTableDeletes,
+                DeleteStatement = this.hardDeleteStatement
             }.TransformText().TrimStart('\r', '\n');
 
             string selectIdNamePairsProcName = string.Empty;
@@ -220,8 +212,7 @@ namespace DatabaseScriptsGenerator
                 selectIdNamePairsProcName = $"[{this.Owner}].[usp_Select_{this.Name}_IdNamePairs]";
                 selectIdNamePairsProc = new SelectIdNamePairsProc()
                 {
-                    TableName = this.Name,
-                    Owner = this.Owner,
+                    FullTableName = this.fullTableName,
                     SelectIdNamePairsProcName = selectIdNamePairsProcName,
                     IdNameColumnList = this.idNameColumnList,
                 }.TransformText().TrimStart('\r', '\n');
@@ -269,9 +260,88 @@ namespace DatabaseScriptsGenerator
                 Columns = allColumns
             }.TransformText().TrimStart('\r', '\n');
 
-            var entityPath = Path.Combine(solutionRootFolder, $"AddAppAPI/Models/{this.Name}.cs");
             var apiProjectPath = Path.Combine(solutionRootFolder, "AddAppAPI/AddAppAPI.csproj");
+
+            var entityPath = Path.Combine(solutionRootFolder, $"AddAppAPI/Models/{this.Name}.cs");
             CommonFunctions.WriteFileToProject("Compile", entityPath, apiProjectPath, entity);
+
+            var lowerCaseTableName = this.Name[0].ToString().ToLower() + this.Name.Substring(1);
+            var entityController = new EntityController()
+            {
+                TableName = this.Name,
+                LowerCaseTableName = lowerCaseTableName,
+                PluralCaseTableName = lowerCaseTableName.EndsWith("y") ? (lowerCaseTableName.TrimEnd('y') + "ies") : (lowerCaseTableName + "s"),
+                KeyColumnType = CommonFunctions.ConvertSqlTypeToDotNetType(this.keyColumn),
+                HasNameColumn = this.NameColumns.Count > 0
+            }.TransformText().TrimStart('\r', '\n');
+
+            var entityControllerPath = Path.Combine(solutionRootFolder, $"AddAppAPI/Controllers/{this.Name}Controller.cs");
+            CommonFunctions.WriteFileToProject("Compile", entityControllerPath, apiProjectPath, entityController);
+        }
+
+        private string GenerateHardDeleteStatement(DataTable ForeignKeyRelations, List<ColumnInfo> keyColumns)
+        {
+            StringBuilder db = new StringBuilder();
+            db.Append($"DELETE {this.fullTableName}{Environment.NewLine}");
+            db.Append($"\tFROM {this.fullTableName}{Environment.NewLine}");
+            //row[5] is fkTableOwner, row[6] is fkTableName
+            foreach (var g in ForeignKeyRelations.AsEnumerable().GroupBy(row=> $"[{row[5].ToString()}].[{row[6].ToString()}]"))
+            {
+                db.Append($"\tINNER JOIN {g.Key} ON ");
+
+                List<string> onClauseParts = new List<string>();
+                foreach (DataRow row in g)
+                {
+                    var pkTableOwner = row[1].ToString();
+                    var pkTableName = row[2].ToString();
+                    var pkColumnName = row[3].ToString();
+                    var fkTableOwner = row[5].ToString();
+                    var fkTableName = row[6].ToString();
+                    var fkColumnName = row[7].ToString();
+
+                    onClauseParts.Add($"[{pkTableOwner}].[{pkTableName}].[{pkColumnName}] = [{fkTableOwner}].[{fkTableName}].[{fkColumnName}]");
+                }
+
+                db.Append($"{string.Join(" AND ", onClauseParts)}{Environment.NewLine}");
+            }
+            this.whereClauseForDelete = string.Join(" AND ", keyColumns.Select(c => $"[{this.Owner}].[{this.Name}].[{c.Name}] = @{c.Name}"));
+            db.Append($"\tWHERE {this.whereClauseForDelete}");
+            var deleteStatement = db.ToString();
+
+            return deleteStatement;
+        }
+
+        private string GenerateSoftDeleteStatement(DataTable ForeignKeyRelations, List<ColumnInfo> keyColumns)
+        {
+            StringBuilder db = new StringBuilder();
+            db.Append($"UPDATE {this.Name}{Environment.NewLine}");
+            db.Append($"SET{Environment.NewLine}");
+            foreach (DataRow r in ForeignKeyRelations.Rows)
+            {
+                var fkTableOwner = r[5].ToString();
+                var fkTableName = r[6].ToString();
+
+                db.Append($"\t[{fkTableOwner}].[{fkTableName}].[is_deleted] = 1{Environment.NewLine}");
+            }
+
+
+            db.Append($"FROM {this.Name}{Environment.NewLine}");
+            foreach (DataRow r in ForeignKeyRelations.Rows)
+            {
+                var pkTableOwner = r[1].ToString();
+                var pkTableName = r[2].ToString();
+                var pkColumnName = r[3].ToString();
+                var fkTableOwner = r[5].ToString();
+                var fkTableName = r[6].ToString();
+                var fkColumnName = r[7].ToString();
+
+                db.Append($"INNER JOIN [{fkTableOwner}].[{fkTableName}] ON [{pkTableOwner}].[{pkTableName}].[{pkColumnName}] = [{fkTableOwner}].[{fkTableName}].[{fkColumnName}]{Environment.NewLine}");
+            }
+            this.whereClauseForDelete = string.Join(" AND ", keyColumns.Select(c => $"[{this.Owner}].[{this.Name}].[{c.Name}] = @{c.Name}"));
+            db.Append($"WHERE {this.whereClauseForDelete}");
+            var deleteStatement = db.ToString();
+
+            return deleteStatement;
         }
     }
 }

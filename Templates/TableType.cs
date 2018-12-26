@@ -48,8 +48,6 @@ namespace DatabaseScriptsGenerator.Templates
         
         #line 12 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\TableType.tt"
 
-public string Owner { get; set; }
-public string TableName { get; set; }
 public string TableTypeName { get; set; }
 public string AllColumnAndTypeList { get; set; }
 

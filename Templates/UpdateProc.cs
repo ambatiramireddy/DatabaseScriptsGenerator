@@ -49,42 +49,28 @@ namespace DatabaseScriptsGenerator.Templates
             
             #line default
             #line hidden
-            this.Write(" READONLY\r\nAS\r\nBEGIN\r\n\r\n\tUPDATE [");
+            this.Write(" READONLY\r\nAS\r\nBEGIN\r\n\r\n\tUPDATE ");
             
             #line 7 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\UpdateProc.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(this.Owner));
+            this.Write(this.ToStringHelper.ToStringWithCulture(this.FullTableName));
             
             #line default
             #line hidden
-            this.Write("].[");
-            
-            #line 7 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\UpdateProc.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(this.TableName));
-            
-            #line default
-            #line hidden
-            this.Write("]\r\n\tSET\t");
+            this.Write("\r\n\tSET\t");
             
             #line 8 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\UpdateProc.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(this.UpdateColumnList));
             
             #line default
             #line hidden
-            this.Write("\r\n\tFROM [");
+            this.Write("\r\n\tFROM ");
             
             #line 9 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\UpdateProc.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(this.Owner));
+            this.Write(this.ToStringHelper.ToStringWithCulture(this.FullTableName));
             
             #line default
             #line hidden
-            this.Write("].[");
-            
-            #line 9 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\UpdateProc.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(this.TableName));
-            
-            #line default
-            #line hidden
-            this.Write("] AS t\r\n\tINNER JOIN @");
+            this.Write(" AS t\r\n\tINNER JOIN @");
             
             #line 10 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\UpdateProc.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(this.TableName));
@@ -104,8 +90,8 @@ namespace DatabaseScriptsGenerator.Templates
         
         #line 21 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\UpdateProc.tt"
 
-public string Owner { get; set; }
 public string TableName { get; set; }
+public string FullTableName { get; set; }
 public string UpdateProcName { get; set; }
 public string UpdateColumnList { get; set; }
 public string OnClause { get; set; }

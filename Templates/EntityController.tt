@@ -23,7 +23,7 @@ namespace AddAppAPI.Controllers
             this.sqlHelper = sqlHelper;
         }
 
-<#if(!string.IsNullOrEmpty(this.KeyColumnType) && this.KeyColumnType.Equals("primary")){#>
+<#if(!string.IsNullOrEmpty(this.KeyColumnCategory) && this.KeyColumnCategory.Equals("primary")){#>
         // GET: api/<#= this.TableName #>
         public async Task<IHttpActionResult> Get()
         {
@@ -85,7 +85,7 @@ namespace AddAppAPI.Controllers
         // POST: api/<#= this.TableName #>
         public async Task<IHttpActionResult> Post(<#= this.TableName #> <#= this.LowerCaseTableName #>)
         {
-<#if(!string.IsNullOrEmpty(this.KeyColumnType) && this.KeyColumnType.Equals("primary")){#>
+<#if(!string.IsNullOrEmpty(this.KeyColumnCategory) && this.KeyColumnCategory.Equals("primary")){#>
             <#= this.KeyColumnType #> id = await this.sqlHelper.InsertAsync<<#= this.KeyColumnType #>>(<#= this.LowerCaseTableName #>);
             return Content(HttpStatusCode.OK, id);
 <#}else{#>
@@ -127,6 +127,7 @@ public string TableName { get; set; }
 public string LowerCaseTableName { get; set; }
 public string PluralCaseTableName { get; set; }
 public string KeyColumnType { get; set; }
+public string KeyColumnCategory { get; set; }
 public bool HasNameColumn { get; set; }
 public string[] KeyColumnNames { get; set; }
 public string KeyColumnAndDotNetTypeList { get; set; }

@@ -47,10 +47,10 @@ namespace DatabaseScriptsGenerator
         public DataTable ColumnDetails { get; set; }
         public string IdentityColumn { get; set; }
         public string[] KeyColumnNames { get; set; }
-        public string KeyColumnType { get; set; }
+        public string KeyColumnCategory { get; set; }
         public DataTable ForeignKeyRelations { get; set; }
 
-        public void GenerateProcs()
+        public string GenerateProcs()
         {
             this.fullTableName = $"[{this.Owner}].[{this.Name}]";
             List<ColumnInfo> keyColumns = new List<ColumnInfo>();
@@ -114,7 +114,7 @@ namespace DatabaseScriptsGenerator
                 {
                     return "@today";
                 }
-                else if (c.Type.Equals("uniqueidentifier") && c.Name.Equals(this.keyColumn.Name) && this.KeyColumnType.Equals("primary"))
+                else if (c.Type.Equals("uniqueidentifier") && c.Name.Equals(this.keyColumn.Name) && this.KeyColumnCategory.Equals("primary"))
                 {
                     return "@guid";
                 }
@@ -151,10 +151,10 @@ namespace DatabaseScriptsGenerator
                 this.idNameColumnList = string.Format("[id], ({0}) as [name]", string.Join(" + ' ' + ", this.NameColumns.Select(s => $"[{s}]")));
             }
 
-            this.GenerateScripts();
+            return this.GenerateScripts();
         }
 
-        private void GenerateScripts()
+        private string GenerateScripts()
         {
             string tableTypeName = $"[{this.Owner}].[tt_{this.Name}]";
             string selectProcName = $"[{this.Owner}].[usp_Select_{this.Name}]";
@@ -174,7 +174,7 @@ namespace DatabaseScriptsGenerator
 
             scriptBuilder.Append(tableType);
 
-            if (!string.IsNullOrEmpty(this.KeyColumnType) && this.KeyColumnType.Equals("primary"))
+            if (!string.IsNullOrEmpty(this.KeyColumnCategory) && this.KeyColumnCategory.Equals("primary"))
             {
                 var selectProc = new SelectProc()
                 {
@@ -279,6 +279,7 @@ namespace DatabaseScriptsGenerator
                 LowerCaseTableName = lowerCaseTableName,
                 PluralCaseTableName = lowerCaseTableName.EndsWith("y") ? (lowerCaseTableName.TrimEnd('y') + "ies") : (lowerCaseTableName + "s"),
                 KeyColumnType = CommonFunctions.ConvertSqlTypeToDotNetType(this.keyColumn),
+                KeyColumnCategory = this.KeyColumnCategory,
                 HasNameColumn = this.NameColumns.Length > 0,
                 KeyColumnNames = this.KeyColumnNames,
                 KeyColumnAndDotNetTypeList = this.keyColumnAndDotNetTypeList,
@@ -287,6 +288,8 @@ namespace DatabaseScriptsGenerator
 
             var entityControllerPath = Path.Combine(solutionRootFolder, $"AddAppAPI/Controllers/{this.Name}Controller.cs");
             CommonFunctions.WriteFileToProject("Compile", entityControllerPath, apiProjectPath, entityController);
+
+            return script;
         }
 
         private string GenerateHardDeleteStatement(DataTable ForeignKeyRelations, List<ColumnInfo> keyColumns)
@@ -297,7 +300,7 @@ namespace DatabaseScriptsGenerator
             //row[5] is fkTableOwner, row[6] is fkTableName
             foreach (var g in ForeignKeyRelations.AsEnumerable().GroupBy(row => $"[{row[5].ToString()}].[{row[6].ToString()}]"))
             {
-                db.Append($"\tINNER JOIN {g.Key} ON ");
+                db.Append($"\tLEFT OUTER JOIN {g.Key} ON ");
 
                 List<string> onClauseParts = new List<string>();
                 foreach (DataRow row in g)

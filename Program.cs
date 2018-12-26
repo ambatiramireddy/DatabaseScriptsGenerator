@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
@@ -6,17 +7,42 @@ using System.Linq;
 
 namespace DatabaseScriptsGenerator
 {
+    
     class Program
     {
         static string connectionString = ConfigurationManager.ConnectionStrings["TestConnection"].ConnectionString;
 
         static void Main(string[] args)
         {
-            SqlTable table = new SqlTable();
-            table.Owner = "dbo";
-            table.Name = "SavedScreen";
-            table.NameColumns = new string[] { };
+            List<SqlTable> tables = new List<SqlTable>();
+            tables.Add(new SqlTable { Owner = "dbo", Name = "Country", NameColumns = new string[] { "name" } });
+            tables.Add(new SqlTable { Owner = "dbo", Name = "State", NameColumns = new string[] { "name" } });
+            tables.Add(new SqlTable { Owner = "dbo", Name = "City", NameColumns = new string[] { "name" } });
+            tables.Add(new SqlTable { Owner = "dbo", Name = "Area", NameColumns = new string[] { "name" } });
+            tables.Add(new SqlTable { Owner = "dbo", Name = "Screen", NameColumns = new string[] { "name" } });
+            tables.Add(new SqlTable { Owner = "dbo", Name = "Request", NameColumns = new string[] { } });
 
+            using (var con = new SqlConnection(connectionString))
+            {
+                con.Open();
+                foreach (var table in tables)
+                {
+                    var sqlScript = GenerateTableObjectScripts(table);
+
+                    foreach (var objectScript in sqlScript.Split(new[] { "GO" }, StringSplitOptions.None))
+                    {
+                        using (var cmd = new SqlCommand($"exec sp_executesql  N'{objectScript.Replace("'", "''")}'", con))
+                        {
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                }
+            }
+        }
+        
+
+        static string GenerateTableObjectScripts(SqlTable table)
+        {
             using (var con = new SqlConnection(connectionString))
             {
                 using (var cmd = new SqlCommand($"exec sp_help '{table.Owner}.{table.Name}'", con))
@@ -28,19 +54,20 @@ namespace DatabaseScriptsGenerator
                         table.ColumnDetails = ds.Tables[1];
                         var identityColumn = ds.Tables[2].Rows[0][0].ToString();
                         table.IdentityColumn = identityColumn.StartsWith("No identity") ? string.Empty : identityColumn;
-                        var primaryKeyDetailsRow = ds.Tables[5].AsEnumerable().FirstOrDefault(row => row[1].ToString().Contains("primary key"));
+                        var indexDetailsTable = ds.Tables[5].AsEnumerable();
+                        var primaryKeyDetailsRow = indexDetailsTable.FirstOrDefault(row => row[1].ToString().Contains("primary key"));
                         if (primaryKeyDetailsRow != null)
                         {
                             table.KeyColumnNames = primaryKeyDetailsRow[2].ToString().Split(',').Select(s => s.Trim(' ')).ToArray();
-                            table.KeyColumnType = "primary";
+                            table.KeyColumnCategory = "primary";
                         }
                         else
                         {
-                            var uniqueKeyDetailsRow = ds.Tables[5].AsEnumerable().FirstOrDefault(row => row[1].ToString().Contains("unique key"));
+                            var uniqueKeyDetailsRow = indexDetailsTable.FirstOrDefault(row => row[1].ToString().Contains("unique key"));
                             if (uniqueKeyDetailsRow != null)
                             {
                                 table.KeyColumnNames = uniqueKeyDetailsRow[2].ToString().Split(',').Select(s => s.Trim(' ')).ToArray();
-                                table.KeyColumnType = "unique";
+                                table.KeyColumnCategory = "unique";
                             }
                         }
                     }
@@ -51,7 +78,7 @@ namespace DatabaseScriptsGenerator
             FindForeignKeyRelationHeirarchy(table.Name, ref dt);
             table.ForeignKeyRelations = dt;
 
-            table.GenerateProcs();
+            return table.GenerateProcs();
         }
 
         static void FindForeignKeyRelationHeirarchy(string tableName, ref DataTable dt)

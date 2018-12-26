@@ -83,7 +83,7 @@ namespace DatabaseScriptsGenerator.Templates
             this.Write("> sqlHelper)\r\n        {\r\n            this.sqlHelper = sqlHelper;\r\n        }\r\n\r\n");
             
             #line 26 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
-if(!string.IsNullOrEmpty(this.KeyColumnType) && this.KeyColumnType.Equals("primary")){
+if(!string.IsNullOrEmpty(this.KeyColumnCategory) && this.KeyColumnCategory.Equals("primary")){
             
             #line default
             #line hidden
@@ -306,7 +306,7 @@ if(HasNameColumn){
             this.Write(")\r\n        {\r\n");
             
             #line 88 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
-if(!string.IsNullOrEmpty(this.KeyColumnType) && this.KeyColumnType.Equals("primary")){
+if(!string.IsNullOrEmpty(this.KeyColumnCategory) && this.KeyColumnCategory.Equals("primary")){
             
             #line default
             #line hidden
@@ -421,6 +421,7 @@ public string TableName { get; set; }
 public string LowerCaseTableName { get; set; }
 public string PluralCaseTableName { get; set; }
 public string KeyColumnType { get; set; }
+public string KeyColumnCategory { get; set; }
 public bool HasNameColumn { get; set; }
 public string[] KeyColumnNames { get; set; }
 public string KeyColumnAndDotNetTypeList { get; set; }

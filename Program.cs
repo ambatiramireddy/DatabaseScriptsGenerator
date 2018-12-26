@@ -19,6 +19,8 @@ namespace DatabaseScriptsGenerator
             tables.Add(new SqlTable { Owner = "dbo", Name = "State", NameColumns = new string[] { "name" } });
             tables.Add(new SqlTable { Owner = "dbo", Name = "City", NameColumns = new string[] { "name" } });
             tables.Add(new SqlTable { Owner = "dbo", Name = "Area", NameColumns = new string[] { "name" } });
+            tables.Add(new SqlTable { Owner = "dbo", Name = "Screen", NameColumns = new string[] { "name" } });
+            tables.Add(new SqlTable { Owner = "dbo", Name = "Request", NameColumns = new string[] { } });
 
             using (var con = new SqlConnection(connectionString))
             {
@@ -73,13 +75,13 @@ namespace DatabaseScriptsGenerator
             }
 
             DataTable dt = null;
-            FindForeignKeyRelationHeirarchy(table.Name, ref dt);
+            FindForeignKeyRelationHeirarchy(table.Name, ref dt, 0);
             table.ForeignKeyRelations = dt;
 
             return table.GenerateProcs();
         }
 
-        static void FindForeignKeyRelationHeirarchy(string tableName, ref DataTable dt)
+        static void FindForeignKeyRelationHeirarchy(string tableName, ref DataTable dt, int level)
         {
             using (var con = new SqlConnection(connectionString))
             {
@@ -93,9 +95,17 @@ namespace DatabaseScriptsGenerator
                         if (dt == null)
                         {
                             dt = ds.Tables[0].Copy();
+                            dt.Columns.Add(new DataColumn("level", typeof(int)));
+                            foreach (DataRow row in dt.Rows)
+                            {
+                                row["level"] = level;
+                            }
+
+                            // taking distinct because primary key can be applied on multiple columns. 
+                            // which causes mutliple records in sp_fkeys result set for a single table
                             foreach (string fkTableName in ds.Tables[0].AsEnumerable().Select(row => row[6].ToString()).Distinct())
                             {
-                                FindForeignKeyRelationHeirarchy(fkTableName, ref dt);
+                                FindForeignKeyRelationHeirarchy(fkTableName, ref dt, level+1);
                             }
                         }
                         else
@@ -104,12 +114,13 @@ namespace DatabaseScriptsGenerator
                             {
                                 var newRow = dt.NewRow();
                                 newRow.ItemArray = row.ItemArray;
+                                newRow["level"] = level;
                                 dt.Rows.Add(newRow);
                             }
 
                             foreach (string fkTableName in ds.Tables[0].AsEnumerable().Select(row => row[6].ToString()).Distinct())
                             {
-                                FindForeignKeyRelationHeirarchy(fkTableName, ref dt);
+                                FindForeignKeyRelationHeirarchy(fkTableName, ref dt, level+1);
                             }
                         }
                     }

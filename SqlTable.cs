@@ -295,33 +295,66 @@ namespace DatabaseScriptsGenerator
         private string GenerateHardDeleteStatement(DataTable ForeignKeyRelations, List<ColumnInfo> keyColumns)
         {
             StringBuilder db = new StringBuilder();
-            db.Append($"DELETE {this.fullTableName}{Environment.NewLine}");
-            db.Append($"\tFROM {this.fullTableName}{Environment.NewLine}");
-            //row[5] is fkTableOwner, row[6] is fkTableName
-            foreach (var g in ForeignKeyRelations.AsEnumerable().GroupBy(row => $"[{row[5].ToString()}].[{row[6].ToString()}]"))
+            this.whereClauseForDelete = string.Join(" AND ", keyColumns.Select(c => $"[{this.Owner}].[{this.Name}].[{c.Name}] = @{c.Name}"));
+            int levelColumnInex = ForeignKeyRelations.Columns.Count - 1;
+
+            //to build delete statements in reverse order from most referenced to least referenced
+            var rows = ForeignKeyRelations.AsEnumerable().OrderByDescending(row => row[levelColumnInex]).ToArray();
+
+            //to construct delete statements for child(fk) tables
+            //grouping to get one group for each reference table (will have mutliple rows if primary key is a mutli-column key)
+            foreach (var g in rows.GroupBy(r => r[6].ToString()).ToArray())
             {
-                db.Append($"\tLEFT OUTER JOIN {g.Key} ON ");
+                StringBuilder currentDeleteStatementBuilder = new StringBuilder();
+                var firstRowInGroup = g.First();
+                var fkTableOwner = firstRowInGroup[5].ToString();
+                var fkTableName = firstRowInGroup[6].ToString();
 
-                List<string> onClauseParts = new List<string>();
-                foreach (DataRow row in g)
+                currentDeleteStatementBuilder.Append($"\tDELETE [{fkTableOwner}].[{fkTableName}]{Environment.NewLine}");
+                currentDeleteStatementBuilder.Append($"\tFROM [{fkTableOwner}].[{fkTableName}]{Environment.NewLine}");
+                var pkTableName = CreateInnerJoinLine(g.ToArray(), currentDeleteStatementBuilder);
+
+                for (int i = (int)firstRowInGroup["level"] - 1; i >= 0; i--)
                 {
-                    var pkTableOwner = row[1].ToString();
-                    var pkTableName = row[2].ToString();
-                    var pkColumnName = row[3].ToString();
-                    var fkTableOwner = row[5].ToString();
-                    var fkTableName = row[6].ToString();
-                    var fkColumnName = row[7].ToString();
-
-                    onClauseParts.Add($"[{pkTableOwner}].[{pkTableName}].[{pkColumnName}] = [{fkTableOwner}].[{fkTableName}].[{fkColumnName}]");
+                    //to get parent table rows for current parent (pk) table
+                    //will return mutliple rows if primary key is a mutli-column key
+                    var nextLevelRows = rows.Where(r => (int)r[levelColumnInex] == i && r[6].ToString() == pkTableName).ToArray();
+                    pkTableName = CreateInnerJoinLine(nextLevelRows, currentDeleteStatementBuilder);
                 }
 
-                db.Append($"{string.Join(" AND ", onClauseParts)}{Environment.NewLine}");
+                currentDeleteStatementBuilder.Append($"\tWHERE {this.whereClauseForDelete}{Environment.NewLine}");
+                db.Append($"{currentDeleteStatementBuilder.ToString()}{Environment.NewLine}");
             }
-            this.whereClauseForDelete = string.Join(" AND ", keyColumns.Select(c => $"[{this.Owner}].[{this.Name}].[{c.Name}] = @{c.Name}"));
-            db.Append($"\tWHERE {this.whereClauseForDelete}");
-            var deleteStatement = db.ToString();
 
+            //parent table delete statement
+            db.Append($"\tDELETE FROM {this.fullTableName} WHERE {this.whereClauseForDelete}{Environment.NewLine}");
+
+            var deleteStatement = db.ToString();
             return deleteStatement;
+        }
+
+        private string CreateInnerJoinLine(DataRow[] currentLevelRows, StringBuilder currentDeleteStatementBuilder)
+        {
+            StringBuilder sb = new StringBuilder();
+            var firstRow = currentLevelRows[0];
+
+            //below values are same for all rows in a level
+            var pkTableOwner = firstRow[1].ToString();
+            var pkTableName = firstRow[2].ToString();
+            var fkTableOwner = firstRow[5].ToString();
+            var fkTableName = firstRow[6].ToString();
+
+            currentDeleteStatementBuilder.Append($"\tINNER JOIN [{currentLevelRows[0][1].ToString()}].[{currentLevelRows[0][2].ToString()}] ON ");
+            List<string> onClauseParts = new List<string>();
+            foreach (var currentLevelRow in currentLevelRows)
+            {
+                var pkColumnName = currentLevelRow[3].ToString();
+                var fkColumnName = currentLevelRow[7].ToString();
+                onClauseParts.Add($"[{pkTableOwner}].[{pkTableName}].[{pkColumnName}] = [{fkTableOwner}].[{fkTableName}].[{fkColumnName}]");
+            }
+
+            currentDeleteStatementBuilder.Append($"{string.Join(" AND ", onClauseParts)}{Environment.NewLine}");
+            return pkTableName;
         }
 
         private string GenerateSoftDeleteStatement(DataTable ForeignKeyRelations, List<ColumnInfo> keyColumns)

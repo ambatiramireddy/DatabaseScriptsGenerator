@@ -178,10 +178,13 @@ CREATE PROC [dbo].[usp_Delete_Request]
 AS
 BEGIN
 
-	DELETE [dbo].[Request]
-	FROM [dbo].[Request]
-	LEFT OUTER JOIN [dbo].[ScreenSlotBooked] ON [dbo].[Request].[id] = [dbo].[ScreenSlotBooked].[request_id]
+	DELETE [dbo].[ScreenSlotBooked]
+	FROM [dbo].[ScreenSlotBooked]
+	INNER JOIN [dbo].[Request] ON [dbo].[Request].[id] = [dbo].[ScreenSlotBooked].[request_id]
 	WHERE [dbo].[Request].[id] = @id
+
+	DELETE FROM [dbo].[Request] WHERE [dbo].[Request].[id] = @id
+
 
 END        
 GO

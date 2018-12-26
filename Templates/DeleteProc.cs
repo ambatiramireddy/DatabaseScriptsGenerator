@@ -42,7 +42,7 @@ namespace DatabaseScriptsGenerator.Templates
             
             #line default
             #line hidden
-            this.Write("\r\nAS\r\nBEGIN\r\n\r\n\t");
+            this.Write("\r\nAS\r\nBEGIN\r\n\r\n");
             
             #line 7 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\DeleteProc.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(this.DeleteStatement));

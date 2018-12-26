@@ -4,7 +4,7 @@ CREATE PROC <#= this.DeleteProcName #>
 AS
 BEGIN
 
-	<#= this.DeleteStatement #>
+<#= this.DeleteStatement #>
 
 END        
 GO

@@ -6,11 +6,12 @@ BEGIN
 
 <# if(HasCreatedDateColumn){#>
 	DECLARE @today datetime = GETUTCDATE()
+
 <#}#>
 <# if(IsKeyColumnGuidColumn){#>
 	DECLARE @guid uniqueidentifier = NEWID()
-<#}#>
 
+<#}#>
 	INSERT INTO <#= this.FullTableName #>(<#= this.InsertIntoColumnList #>)
 	SELECT <#= this.InsertSelectColumnList #>
 	FROM @<#= this.TableName #>

@@ -14,8 +14,8 @@ namespace DatabaseScriptsGenerator
         {
             SqlTable table = new SqlTable();
             table.Owner = "dbo";
-            table.Name = "Country";
-            table.NameColumns = new List<string> { "name" };
+            table.Name = "SavedScreen";
+            table.NameColumns = new string[] { };
 
             using (var con = new SqlConnection(connectionString))
             {
@@ -28,7 +28,21 @@ namespace DatabaseScriptsGenerator
                         table.ColumnDetails = ds.Tables[1];
                         var identityColumn = ds.Tables[2].Rows[0][0].ToString();
                         table.IdentityColumn = identityColumn.StartsWith("No identity") ? string.Empty : identityColumn;
-                        table.KeyColumns = ds.Tables[5].Rows[0][2].ToString().Split(',').Select(s => s.Trim(' ')).ToArray();
+                        var primaryKeyDetailsRow = ds.Tables[5].AsEnumerable().FirstOrDefault(row => row[1].ToString().Contains("primary key"));
+                        if (primaryKeyDetailsRow != null)
+                        {
+                            table.KeyColumnNames = primaryKeyDetailsRow[2].ToString().Split(',').Select(s => s.Trim(' ')).ToArray();
+                            table.KeyColumnType = "primary";
+                        }
+                        else
+                        {
+                            var uniqueKeyDetailsRow = ds.Tables[5].AsEnumerable().FirstOrDefault(row => row[1].ToString().Contains("unique key"));
+                            if (uniqueKeyDetailsRow != null)
+                            {
+                                table.KeyColumnNames = uniqueKeyDetailsRow[2].ToString().Split(',').Select(s => s.Trim(' ')).ToArray();
+                                table.KeyColumnType = "unique";
+                            }
+                        }
                     }
                 }
             }

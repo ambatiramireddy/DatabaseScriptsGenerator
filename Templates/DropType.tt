@@ -1,0 +1,11 @@
+﻿
+IF EXISTS (SELECT * FROM systypes WHERE name = 'tt_<#= this.TableName #>')
+DROP TYPE <#= this.TypeName #>
+GO
+
+<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#+
+public string TableName { get; set; }
+public string TypeName { get; set; }
+#>

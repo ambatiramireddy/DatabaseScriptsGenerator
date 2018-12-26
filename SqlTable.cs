@@ -18,7 +18,7 @@ namespace DatabaseScriptsGenerator
         string keyColumnList;
         string whereClause;
         string onClause;
-       
+
         string insertIntoColumnList;
         string insertSelectColumnList;
         bool hasCreatedDateColumn;
@@ -26,13 +26,15 @@ namespace DatabaseScriptsGenerator
 
         string updateColumnList;
         string keyColumnAndTypeList;
-       
+        string keyColumnAndDotNetTypeList;
+        string keyColumnDotNetVariableNameList;
+
         string[] referenceTableDeletes;
         string allColumnAndTypeList;
         string idNameColumnList;
         string hardDeleteStatement;
         string whereClauseForDelete;
-        
+
 
         public SqlTable()
         {
@@ -41,10 +43,11 @@ namespace DatabaseScriptsGenerator
 
         public string Owner { get; set; }
         public string Name { get; set; }
-        public List<string> NameColumns { get; set; }
+        public string[] NameColumns { get; set; }
         public DataTable ColumnDetails { get; set; }
         public string IdentityColumn { get; set; }
-        public string[] KeyColumns { get; set; }
+        public string[] KeyColumnNames { get; set; }
+        public string KeyColumnType { get; set; }
         public DataTable ForeignKeyRelations { get; set; }
 
         public void GenerateProcs()
@@ -69,7 +72,7 @@ namespace DatabaseScriptsGenerator
                 {
                     //ignore
                 }
-                else if (KeyColumns.Any(c => c.Equals(columnName)))
+                else if (this.KeyColumnNames != null && this.KeyColumnNames.Any(c => c.Equals(columnName)))
                 {
                     keyColumns.Add(new ColumnInfo { Name = columnName, Type = $"{columnType}{colLengthString}", Nullable = colNullable });
                 }
@@ -85,18 +88,23 @@ namespace DatabaseScriptsGenerator
             var oneTabSeparator = string.Format(",{0}{1}", Environment.NewLine, new string('\t', 1));
             var twoTabSeparator = string.Format(",{0}{1}", Environment.NewLine, new string('\t', 2));
 
+            if (keyColumns.Count > 0)
+            {
+                this.keyColumn = keyColumns[0];
+                this.keyColumnAndTypeList = string.Join("," + Environment.NewLine, keyColumns.Select(c => $"@{c.Name} {c.Type}"));
+                this.keyColumnAndDotNetTypeList = string.Join(", ", keyColumns.Select(c => $"{CommonFunctions.ConvertSqlTypeToDotNetType(c)} {CommonFunctions.ConvertDbColumnNameToCSharpVariableName(c.Name)}"));
+                this.keyColumnDotNetVariableNameList = string.Join(" and ", keyColumns.Select(c => $"{CommonFunctions.ConvertDbColumnNameToCSharpVariableName(c.Name)}"));
+                this.keyColumnList = string.Join(twoTabSeparator, keyColumns.Select(c => $"[{c.Name}]"));
+
+                this.whereClause = string.Join(" AND ", keyColumns.Select(c => $"{c.Name} = @{c.Name}"));
+                this.onClause = string.Join(" AND ", keyColumns.Select(c => $"t.{c.Name} = s.{c.Name}"));
+            }
+
             this.allColumnAndTypeList = string.Join(oneTabSeparator, allColumns.Select(c => string.Format("[{0}] {1} {2}", c.Name, c.Type, c.Nullable ? "NULL" : "NOT NULL")));
-            this.keyColumnAndTypeList = string.Join("," + Environment.NewLine, keyColumns.Select(c => $"@{c.Name} {c.Type}"));
-            this.keyColumnList = string.Join(twoTabSeparator, keyColumns.Select(c => $"[{c.Name}]"));
             this.nonKeyColumnList = string.Join(twoTabSeparator, nonKeyColumns.Select(c => $"[{c.Name}]"));
             this.allColumnList = indentation + string.Join(twoTabSeparator, allColumns.Select(c => $"[{c.Name}]"));
-
-            this.whereClause = string.Join(" AND ", keyColumns.Select(c => $"{c.Name} = @{c.Name}"));
-            this.onClause = string.Join(" AND ", keyColumns.Select(c => $"t.{c.Name} = s.{c.Name}"));
-
             this.hasCreatedDateColumn = nonKeyColumns.Any(c => string.Join("", c.Name.Split(" _".ToCharArray())).ToLower().Equals("createddate"));
 
-            this.keyColumn = keyColumns[0];
             var insertColumns = allColumns.Where(c => !c.Name.Equals(this.IdentityColumn)).ToArray();
             this.insertIntoColumnList = indentation + string.Join(twoTabSeparator, insertColumns.Select(c => $"[{c.Name}]"));
             this.insertSelectColumnList = indentation + string.Join(twoTabSeparator, insertColumns.Select(c =>
@@ -106,7 +114,7 @@ namespace DatabaseScriptsGenerator
                 {
                     return "@today";
                 }
-                else if (c.Type.Equals("uniqueidentifier"))
+                else if (c.Type.Equals("uniqueidentifier") && c.Name.Equals(this.keyColumn.Name) && this.KeyColumnType.Equals("primary"))
                 {
                     return "@guid";
                 }
@@ -138,7 +146,7 @@ namespace DatabaseScriptsGenerator
             this.hardDeleteStatement = GenerateHardDeleteStatement(ForeignKeyRelations, keyColumns);
             var softDeleteStatement = GenerateSoftDeleteStatement(ForeignKeyRelations, keyColumns);
 
-            if (this.NameColumns.Count > 0)
+            if (this.NameColumns.Length > 0)
             {
                 this.idNameColumnList = string.Format("[id], ({0}) as [name]", string.Join(" + ' ' + ", this.NameColumns.Select(s => $"[{s}]")));
             }
@@ -155,27 +163,67 @@ namespace DatabaseScriptsGenerator
             string updateProcName = $"[{this.Owner}].[usp_Update_{this.Name}]";
             string deleteProcName = $"[{this.Owner}].[usp_Delete_{this.Name}]";
 
+            StringBuilder scriptBuilder = new StringBuilder();
+            StringBuilder dropScriptBuilder = new StringBuilder();
+
             var tableType = new TableType()
             {
                 TableTypeName = tableTypeName,
                 AllColumnAndTypeList = this.allColumnAndTypeList
             }.TransformText().TrimStart('\r', '\n');
 
-            var selectProc = new SelectProc()
-            {
-                FullTableName = this.fullTableName,
-                SelectProcName = selectProcName,
-                AllColumnList = this.allColumnList,
-                keyColumnAndTypeList = this.keyColumnAndTypeList,
-                WhereClause = this.whereClause
-            }.TransformText().TrimStart('\r', '\n');
+            scriptBuilder.Append(tableType);
 
-            var selectAllProc = new SelectAllProc()
+            if (!string.IsNullOrEmpty(this.KeyColumnType) && this.KeyColumnType.Equals("primary"))
             {
-                FullTableName = this.fullTableName,
-                SelectAllProcName = selectAllProcName,
-                AllColumnList = this.allColumnList,
-            }.TransformText().TrimStart('\r', '\n');
+                var selectProc = new SelectProc()
+                {
+                    FullTableName = this.fullTableName,
+                    SelectProcName = selectProcName,
+                    AllColumnList = this.allColumnList,
+                    keyColumnAndTypeList = this.keyColumnAndTypeList,
+                    WhereClause = this.whereClause
+                }.TransformText().TrimStart('\r', '\n');
+
+                scriptBuilder.Append(selectProc);
+                dropScriptBuilder.Append(new DropProc() { ProcName = selectProcName }.TransformText().TrimStart('\r', '\n'));
+
+                var selectAllProc = new SelectAllProc()
+                {
+                    FullTableName = this.fullTableName,
+                    SelectAllProcName = selectAllProcName,
+                    AllColumnList = this.allColumnList,
+                }.TransformText().TrimStart('\r', '\n');
+
+                scriptBuilder.Append(selectAllProc);
+                dropScriptBuilder.Append(new DropProc() { ProcName = selectAllProcName }.TransformText().TrimStart('\r', '\n'));
+
+                var updateProc = new UpdateProc()
+                {
+                    TableName = this.Name,
+                    FullTableName = this.fullTableName,
+                    UpdateProcName = updateProcName,
+                    UpdateColumnList = this.updateColumnList,
+                    OnClause = this.onClause
+                }.TransformText().TrimStart('\r', '\n');
+
+                scriptBuilder.Append(updateProc);
+                dropScriptBuilder.Append(new DropProc() { ProcName = updateProcName }.TransformText().TrimStart('\r', '\n'));
+
+                if (this.NameColumns.Length > 0)
+                {
+                    var selectIdNamePairsProcName = $"[{this.Owner}].[usp_Select_{this.Name}_IdNamePairs]";
+                    var selectIdNamePairsProc = new SelectIdNamePairsProc()
+                    {
+                        FullTableName = this.fullTableName,
+                        SelectIdNamePairsProcName = selectIdNamePairsProcName,
+                        IdNameColumnList = this.idNameColumnList,
+                    }.TransformText().TrimStart('\r', '\n');
+
+                    scriptBuilder.Append(selectIdNamePairsProc);
+                    dropScriptBuilder.Append(new DropProc() { ProcName = selectIdNamePairsProcName }.TransformText().TrimStart('\r', '\n'));
+                }
+            }
 
             var insertProc = new InsertProc()
             {
@@ -186,17 +234,11 @@ namespace DatabaseScriptsGenerator
                 InsertSelectColumnList = this.insertSelectColumnList,
                 IdentityColumn = this.IdentityColumn,
                 HasCreatedDateColumn = this.hasCreatedDateColumn,
-                IsKeyColumnGuidColumn = this.keyColumn.Type.Equals("uniqueidentifier")
+                IsKeyColumnGuidColumn = (this.keyColumn != null && this.keyColumn.Type.Equals("uniqueidentifier"))
             }.TransformText().TrimStart('\r', '\n');
 
-            var updateProc = new UpdateProc()
-            {
-                TableName = this.Name,
-                FullTableName = this.fullTableName,
-                UpdateProcName = updateProcName,
-                UpdateColumnList = this.updateColumnList,
-                OnClause = this.onClause
-            }.TransformText().TrimStart('\r', '\n');
+            scriptBuilder.Append(insertProc);
+            dropScriptBuilder.Append(new DropProc() { ProcName = insertProcName }.TransformText().TrimStart('\r', '\n'));
 
             var deleteProc = new DeleteProc()
             {
@@ -205,51 +247,16 @@ namespace DatabaseScriptsGenerator
                 DeleteStatement = this.hardDeleteStatement
             }.TransformText().TrimStart('\r', '\n');
 
-            string selectIdNamePairsProcName = string.Empty;
-            string selectIdNamePairsProc = string.Empty;
-            if (!string.IsNullOrEmpty(this.idNameColumnList))
-            {
-                selectIdNamePairsProcName = $"[{this.Owner}].[usp_Select_{this.Name}_IdNamePairs]";
-                selectIdNamePairsProc = new SelectIdNamePairsProc()
-                {
-                    FullTableName = this.fullTableName,
-                    SelectIdNamePairsProcName = selectIdNamePairsProcName,
-                    IdNameColumnList = this.idNameColumnList,
-                }.TransformText().TrimStart('\r', '\n');
-            }
+            scriptBuilder.Append(deleteProc);
+            dropScriptBuilder.Append(new DropProc() { ProcName = deleteProcName }.TransformText().TrimStart('\r', '\n'));
 
-            var dropScript = new DropScript()
-            {
-                TableName = this.Name,
-                TableTypeName = tableTypeName,
-                SelectProcName = selectProcName,
-                SelectAllProcName = selectAllProcName,
-                SelectIdNamePairsProcName = selectIdNamePairsProcName,
-                InsertProcName = insertProcName,
-                UpdateProcName = updateProcName,
-                DeleteProcName = deleteProcName,
-            }.TransformText().TrimStart('\r', '\n');
+            dropScriptBuilder.Append(new DropType() { TableName = this.Name, TypeName = tableTypeName }.TransformText().TrimStart('\r', '\n'));
 
-            StringBuilder sb = new StringBuilder();
-            sb.Append(dropScript);
-            sb.Append(tableType);
-
-            sb.Append(selectProc);
-            sb.Append(selectAllProc);
-            if (!string.IsNullOrEmpty(selectIdNamePairsProc))
-            {
-                sb.Append(selectIdNamePairsProc);
-            }
-
-            sb.Append(insertProc);
-            sb.Append(updateProc);
-            sb.Append(deleteProc);
-           
-
-            var script = sb.ToString();
+            scriptBuilder.Insert(0, dropScriptBuilder.ToString());
+            var script = scriptBuilder.ToString();
 
             var solutionRootFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../");
-            
+
             var dbProjectPath = Path.Combine(solutionRootFolder, "DatabaseScriptsGenerator/DatabaseScriptsGenerator.csproj");
             var dbScriptPath = Path.Combine(solutionRootFolder, "DatabaseScriptsGenerator/Files/Script.sql");
             CommonFunctions.WriteFileToProject("Content", dbScriptPath, dbProjectPath, script);
@@ -272,7 +279,10 @@ namespace DatabaseScriptsGenerator
                 LowerCaseTableName = lowerCaseTableName,
                 PluralCaseTableName = lowerCaseTableName.EndsWith("y") ? (lowerCaseTableName.TrimEnd('y') + "ies") : (lowerCaseTableName + "s"),
                 KeyColumnType = CommonFunctions.ConvertSqlTypeToDotNetType(this.keyColumn),
-                HasNameColumn = this.NameColumns.Count > 0
+                HasNameColumn = this.NameColumns.Length > 0,
+                KeyColumnNames = this.KeyColumnNames,
+                KeyColumnAndDotNetTypeList = this.keyColumnAndDotNetTypeList,
+                KeyColumnDotNetVariableNameList = this.keyColumnDotNetVariableNameList
             }.TransformText().TrimStart('\r', '\n');
 
             var entityControllerPath = Path.Combine(solutionRootFolder, $"AddAppAPI/Controllers/{this.Name}Controller.cs");
@@ -285,7 +295,7 @@ namespace DatabaseScriptsGenerator
             db.Append($"DELETE {this.fullTableName}{Environment.NewLine}");
             db.Append($"\tFROM {this.fullTableName}{Environment.NewLine}");
             //row[5] is fkTableOwner, row[6] is fkTableName
-            foreach (var g in ForeignKeyRelations.AsEnumerable().GroupBy(row=> $"[{row[5].ToString()}].[{row[6].ToString()}]"))
+            foreach (var g in ForeignKeyRelations.AsEnumerable().GroupBy(row => $"[{row[5].ToString()}].[{row[6].ToString()}]"))
             {
                 db.Append($"\tINNER JOIN {g.Key} ON ");
 

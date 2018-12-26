@@ -1,0 +1,10 @@
+﻿
+IF EXISTS (SELECT * FROM sysobjects WHERE id = object_id('<#= this.ProcName #>') and type = 'p')
+DROP PROC <#= this.ProcName #>
+GO
+
+<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#+
+public string ProcName { get; set; }
+#>

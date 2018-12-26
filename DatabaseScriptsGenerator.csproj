@@ -55,6 +55,16 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
+    <Compile Include="Templates\DropProc.cs">
+      <DependentUpon>DropProc.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="Templates\DropType.cs">
+      <DependentUpon>DropType.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
     <Compile Include="Templates\EntityController.cs">
       <DependentUpon>EntityController.tt</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -77,11 +87,6 @@
     </Compile>
     <Compile Include="Templates\TableType.cs">
       <DependentUpon>TableType.tt</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-    </Compile>
-    <Compile Include="Templates\DropScript.cs">
-      <DependentUpon>DropScript.tt</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
@@ -111,6 +116,14 @@
       <Generator>TextTemplatingFilePreprocessor</Generator>
       <LastGenOutput>DeleteProc.cs</LastGenOutput>
     </Content>
+    <Content Include="Templates\DropProc.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>DropProc.cs</LastGenOutput>
+    </Content>
+    <Content Include="Templates\DropType.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>DropType.cs</LastGenOutput>
+    </Content>
     <Content Include="Templates\EntityController.tt">
       <Generator>TextTemplatingFilePreprocessor</Generator>
       <LastGenOutput>EntityController.cs</LastGenOutput>
@@ -130,10 +143,6 @@
     <Content Include="Templates\TableType.tt">
       <Generator>TextTemplatingFilePreprocessor</Generator>
       <LastGenOutput>TableType.cs</LastGenOutput>
-    </Content>
-    <Content Include="Templates\DropScript.tt">
-      <Generator>TextTemplatingFilePreprocessor</Generator>
-      <LastGenOutput>DropScript.cs</LastGenOutput>
     </Content>
     <Content Include="Templates\UpdateProc.tt">
       <Generator>TextTemplatingFilePreprocessor</Generator>

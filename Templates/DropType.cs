@@ -9,18 +9,15 @@
 // ------------------------------------------------------------------------------
 namespace DatabaseScriptsGenerator.Templates
 {
-    using System.Linq;
-    using System.Text;
-    using System.Collections.Generic;
     using System;
     
     /// <summary>
     /// Class to produce the template output
     /// </summary>
     
-    #line 1 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\InsertProc.tt"
+    #line 1 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\DropType.tt"
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.TextTemplating", "15.0.0.0")]
-    public partial class InsertProc : InsertProcBase
+    public partial class DropType : DropTypeBase
     {
 #line hidden
         /// <summary>
@@ -28,123 +25,28 @@ namespace DatabaseScriptsGenerator.Templates
         /// </summary>
         public virtual string TransformText()
         {
-            this.Write("\r\nCREATE PROC ");
+            this.Write("\r\nIF EXISTS (SELECT * FROM systypes WHERE name = \'tt_");
             
-            #line 2 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\InsertProc.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(this.InsertProcName));
-            
-            #line default
-            #line hidden
-            this.Write("\r\n@");
-            
-            #line 3 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\InsertProc.tt"
+            #line 2 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\DropType.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(this.TableName));
             
             #line default
             #line hidden
-            this.Write(" tt_");
+            this.Write("\')\r\nDROP TYPE ");
             
-            #line 3 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\InsertProc.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(this.TableName));
-            
-            #line default
-            #line hidden
-            this.Write(" READONLY\r\nAS\r\nBEGIN\r\n\r\n");
-            
-            #line 7 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\InsertProc.tt"
- if(HasCreatedDateColumn){
+            #line 3 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\DropType.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture(this.TypeName));
             
             #line default
             #line hidden
-            this.Write("\tDECLARE @today datetime = GETUTCDATE()\r\n\r\n");
-            
-            #line 10 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\InsertProc.tt"
-}
-            
-            #line default
-            #line hidden
-            
-            #line 11 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\InsertProc.tt"
- if(IsKeyColumnGuidColumn){
-            
-            #line default
-            #line hidden
-            this.Write("\tDECLARE @guid uniqueidentifier = NEWID()\r\n\r\n");
-            
-            #line 14 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\InsertProc.tt"
-}
-            
-            #line default
-            #line hidden
-            this.Write("\tINSERT INTO ");
-            
-            #line 15 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\InsertProc.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(this.FullTableName));
-            
-            #line default
-            #line hidden
-            this.Write("(");
-            
-            #line 15 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\InsertProc.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(this.InsertIntoColumnList));
-            
-            #line default
-            #line hidden
-            this.Write(")\r\n\tSELECT ");
-            
-            #line 16 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\InsertProc.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(this.InsertSelectColumnList));
-            
-            #line default
-            #line hidden
-            this.Write("\r\n\tFROM @");
-            
-            #line 17 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\InsertProc.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(this.TableName));
-            
-            #line default
-            #line hidden
-            this.Write("\r\n\r\n");
-            
-            #line 19 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\InsertProc.tt"
- if(!string.IsNullOrEmpty(IdentityColumn)){
-            
-            #line default
-            #line hidden
-            this.Write("\tSELECT SCOPE_IDENTITY()\r\n");
-            
-            #line 21 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\InsertProc.tt"
-}
-            
-            #line default
-            #line hidden
-            
-            #line 22 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\InsertProc.tt"
- if(IsKeyColumnGuidColumn){
-            
-            #line default
-            #line hidden
-            this.Write("\tSELECT @guid\r\n");
-            
-            #line 24 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\InsertProc.tt"
-}
-            
-            #line default
-            #line hidden
-            this.Write("\r\nEND        \r\nGO\r\n\r\n");
+            this.Write("\r\nGO\r\n\r\n");
             return this.GenerationEnvironment.ToString();
         }
         
-        #line 34 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\InsertProc.tt"
+        #line 8 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\DropType.tt"
 
 public string TableName { get; set; }
-public string FullTableName { get; set; }
-public string InsertProcName { get; set; }
-public string InsertIntoColumnList { get; set; }
-public string InsertSelectColumnList { get; set; }
-public string IdentityColumn { get; set; }
-public bool HasCreatedDateColumn { get; set; }
-public bool IsKeyColumnGuidColumn { get; set; }
+public string TypeName { get; set; }
 
         
         #line default
@@ -158,7 +60,7 @@ public bool IsKeyColumnGuidColumn { get; set; }
     /// Base class for this transformation
     /// </summary>
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.TextTemplating", "15.0.0.0")]
-    public class InsertProcBase
+    public class DropTypeBase
     {
         #region Fields
         private global::System.Text.StringBuilder generationEnvironmentField;

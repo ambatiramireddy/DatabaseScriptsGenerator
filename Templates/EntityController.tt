@@ -1,6 +1,6 @@
-﻿
-using AddAppAPI.Helpers;
+﻿using AddAppAPI.Helpers;
 using AddAppAPI.Models;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
@@ -23,6 +23,7 @@ namespace AddAppAPI.Controllers
             this.sqlHelper = sqlHelper;
         }
 
+<#if(!string.IsNullOrEmpty(this.KeyColumnType) && this.KeyColumnType.Equals("primary")){#>
         // GET: api/<#= this.TableName #>
         public async Task<IHttpActionResult> Get()
         {
@@ -33,14 +34,15 @@ namespace AddAppAPI.Controllers
         // GET: api/<#= this.TableName #>/5
         public async Task<IHttpActionResult> Get(<#= this.KeyColumnType #> id)
         {
-            var <#= this.LowerCaseTableName #> = await this.sqlHelper.SelectOneAsync(new Dictionary<string, object> { { "id", id } });
+			var parameters = new Dictionary<string, object> { { "id", id } };
+            var <#= this.LowerCaseTableName #> = await this.sqlHelper.SelectOneAsync(parameters);
             if (<#= this.LowerCaseTableName #> != null)
             {
                 return Content(HttpStatusCode.OK, <#= this.LowerCaseTableName #>);
             }
             else
             {
-                var message = string.Format("No <#= this.LowerCaseTableName #> found for <#= this.LowerCaseTableName #> id:{0}", id);
+                var message = string.Format("No <#= this.TableName #> found for <#= this.LowerCaseTableName #> id:{0}", id);
                 return Content(HttpStatusCode.NotFound, message);
             }
         }
@@ -58,14 +60,7 @@ namespace AddAppAPI.Controllers
 <#}else{#>
 
 <#}#>
-        // POST: api/<#= this.TableName #>
-        public async Task<IHttpActionResult> Post(<#= this.TableName #> <#= this.LowerCaseTableName #>)
-        {
-            <#= this.KeyColumnType #> id = await this.sqlHelper.InsertAsync<<#= this.KeyColumnType #>>(<#= this.LowerCaseTableName #>);
-            return Content(HttpStatusCode.OK, id);
-        }
-
-        // PUT: api/<#= this.TableName #>/5
+		// PUT: api/<#= this.TableName #>/5
         public async Task<IHttpActionResult> Put(<#= this.KeyColumnType #> id, <#= this.TableName #> <#= this.LowerCaseTableName #>)
         {
             if (id != <#= this.LowerCaseTableName #>.Id)
@@ -81,22 +76,39 @@ namespace AddAppAPI.Controllers
             }
             else
             {
-                var message = string.Format("No <#= this.LowerCaseTableName #> found for <#= this.LowerCaseTableName #> id:'{0}'", id);
+                var message = string.Format("No <#= this.TableName #> found for <#= this.LowerCaseTableName #> id:'{0}'", id);
                 return Content(HttpStatusCode.NotFound, message);
             }
         }
+<#}#>
+
+        // POST: api/<#= this.TableName #>
+        public async Task<IHttpActionResult> Post(<#= this.TableName #> <#= this.LowerCaseTableName #>)
+        {
+<#if(!string.IsNullOrEmpty(this.KeyColumnType) && this.KeyColumnType.Equals("primary")){#>
+            <#= this.KeyColumnType #> id = await this.sqlHelper.InsertAsync<<#= this.KeyColumnType #>>(<#= this.LowerCaseTableName #>);
+            return Content(HttpStatusCode.OK, id);
+<#}else{#>
+			await this.sqlHelper.InsertAsync<object>(<#= this.LowerCaseTableName #>);
+            return Ok();
+<#}#>
+        }
 
         // DELETE: api/<#= this.TableName #>/5
-        public async Task<IHttpActionResult> Delete(<#= this.KeyColumnType #> id)
+        public async Task<IHttpActionResult> Delete(<#= this.KeyColumnAndDotNetTypeList #>)
         {
-            var success = await this.sqlHelper.DeleteAsync(new Dictionary<string, object> { { "id", id } });
+			var parameters = new Dictionary<string, object>();
+<#foreach(var key in KeyColumnNames){#>
+			parameters.Add("<#= key #>", <#= CommonFunctions.ConvertDbColumnNameToCSharpVariableName(key) #>);
+<#}#>
+            var success = await this.sqlHelper.DeleteAsync(parameters);
             if (success)
             {
-                return Content(HttpStatusCode.OK, id);
+                return Ok();
             }
             else
             {
-                var message = string.Format("No <#= this.LowerCaseTableName #> found for <#= this.LowerCaseTableName #> id:{0}", id);
+                var message = string.Format("No <#= this.TableName #> found for given <#= this.KeyColumnDotNetVariableNameList #>");
                 return Content(HttpStatusCode.NotFound, message);
             }
         }
@@ -116,4 +128,7 @@ public string LowerCaseTableName { get; set; }
 public string PluralCaseTableName { get; set; }
 public string KeyColumnType { get; set; }
 public bool HasNameColumn { get; set; }
+public string[] KeyColumnNames { get; set; }
+public string KeyColumnAndDotNetTypeList { get; set; }
+public string KeyColumnDotNetVariableNameList { get; set; }
 #>

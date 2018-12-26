@@ -12,6 +12,12 @@ namespace DatabaseScriptsGenerator
             return string.Join(string.Empty, columnName.Split(" _".ToCharArray()).Select(s => textInfo.ToTitleCase(s)));
         }
 
+        public static string ConvertDbColumnNameToCSharpVariableName(string columnName)
+        {
+            var propName = ConvertDbColumnNameToCSharpPropName(columnName);
+            return propName[0].ToString().ToLower() + propName.Substring(1);
+        }
+
         public static string ConvertSqlTypeToDotNetType(ColumnInfo column)
         {
             string dotNetType = string.Empty;

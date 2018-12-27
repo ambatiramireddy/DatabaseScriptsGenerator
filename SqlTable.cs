@@ -18,6 +18,7 @@ namespace DatabaseScriptsGenerator
         string keyColumnList;
         string whereClause;
         string onClause;
+        string deleteFlagWhereClause;
 
         string insertIntoColumnList;
         string insertSelectColumnList;
@@ -33,7 +34,9 @@ namespace DatabaseScriptsGenerator
         string allColumnAndTypeList;
         string idNameColumnList;
         string hardDeleteStatement;
+        string softDeleteStatement;
         string whereClauseForDelete;
+        string deletedFlagColumnName;
 
 
         public SqlTable()
@@ -70,7 +73,7 @@ namespace DatabaseScriptsGenerator
                 var modifiedColumnName = string.Join("", columnName.Split(" _".ToCharArray())).ToLower();
                 if (modifiedColumnName.Equals("isdeleted"))
                 {
-                    //ignore
+                    this.deletedFlagColumnName = columnName;
                 }
                 else if (this.KeyColumnNames != null && this.KeyColumnNames.Any(c => c.Equals(columnName)))
                 {
@@ -96,8 +99,18 @@ namespace DatabaseScriptsGenerator
                 this.keyColumnDotNetVariableNameList = string.Join(" and ", keyColumns.Select(c => $"{CommonFunctions.ConvertDbColumnNameToCSharpVariableName(c.Name)}"));
                 this.keyColumnList = string.Join(twoTabSeparator, keyColumns.Select(c => $"[{c.Name}]"));
 
-                this.whereClause = string.Join(" AND ", keyColumns.Select(c => $"{c.Name} = @{c.Name}"));
                 this.onClause = string.Join(" AND ", keyColumns.Select(c => $"t.{c.Name} = s.{c.Name}"));
+                if (this.deletedFlagColumnName == null)
+                {
+                    this.whereClause = string.Join(" AND ", keyColumns.Select(c => $"[{c.Name}] = @{c.Name}"));
+                    this.whereClauseForDelete = string.Join(" AND ", keyColumns.Select(c => $"[{this.Owner}].[{this.Name}].[{c.Name}] = @{c.Name}"));
+                }
+                else
+                {
+                    this.deleteFlagWhereClause = $"[{this.deletedFlagColumnName}] IS NULL";
+                    this.whereClause = string.Join(" AND ", keyColumns.Select(c => $"[{c.Name}] = @{c.Name}")) + $" AND {this.deleteFlagWhereClause}";
+                    this.whereClauseForDelete = string.Join(" AND ", keyColumns.Select(c => $"{this.fullTableName}.[{c.Name}] = @{c.Name}")) + $" AND {this.fullTableName}.{this.deleteFlagWhereClause}";
+                }
             }
 
             this.allColumnAndTypeList = string.Join(oneTabSeparator, allColumns.Select(c => string.Format("[{0}] {1} {2}", c.Name, c.Type, c.Nullable ? "NULL" : "NOT NULL")));
@@ -142,9 +155,14 @@ namespace DatabaseScriptsGenerator
                 }
             }).Where(s => s != string.Empty));
 
-
-            this.hardDeleteStatement = GenerateHardDeleteStatement(ForeignKeyRelations, keyColumns);
-            var softDeleteStatement = GenerateSoftDeleteStatement(ForeignKeyRelations, keyColumns);
+            if (this.deletedFlagColumnName != null)
+            {
+                this.softDeleteStatement = GenerateSoftDeleteStatement(ForeignKeyRelations, keyColumns);
+            }
+            else
+            {
+                this.hardDeleteStatement = GenerateHardDeleteStatement(ForeignKeyRelations, keyColumns);
+            }
 
             if (this.NameColumns.Length > 0)
             {
@@ -193,6 +211,7 @@ namespace DatabaseScriptsGenerator
                     FullTableName = this.fullTableName,
                     SelectAllProcName = selectAllProcName,
                     AllColumnList = this.allColumnList,
+                    DeleteFlagWhereClause = this.deleteFlagWhereClause
                 }.TransformText().TrimStart('\r', '\n');
 
                 scriptBuilder.Append(selectAllProc);
@@ -218,6 +237,7 @@ namespace DatabaseScriptsGenerator
                         FullTableName = this.fullTableName,
                         SelectIdNamePairsProcName = selectIdNamePairsProcName,
                         IdNameColumnList = this.idNameColumnList,
+                        DeleteFlagWhereClause = this.deleteFlagWhereClause
                     }.TransformText().TrimStart('\r', '\n');
 
                     scriptBuilder.Append(selectIdNamePairsProc);
@@ -244,7 +264,7 @@ namespace DatabaseScriptsGenerator
             {
                 DeleteProcName = deleteProcName,
                 keyColumnAndTypeList = this.keyColumnAndTypeList,
-                DeleteStatement = this.hardDeleteStatement
+                DeleteStatement = this.hardDeleteStatement != null ? this.hardDeleteStatement : this.softDeleteStatement
             }.TransformText().TrimStart('\r', '\n');
 
             scriptBuilder.Append(deleteProc);
@@ -295,7 +315,6 @@ namespace DatabaseScriptsGenerator
         private string GenerateHardDeleteStatement(DataTable ForeignKeyRelations, List<ColumnInfo> keyColumns)
         {
             StringBuilder db = new StringBuilder();
-            this.whereClauseForDelete = string.Join(" AND ", keyColumns.Select(c => $"[{this.Owner}].[{this.Name}].[{c.Name}] = @{c.Name}"));
             int levelColumnInex = ForeignKeyRelations.Columns.Count - 1;
 
             //to build delete statements in reverse order from most referenced to least referenced
@@ -327,7 +346,8 @@ namespace DatabaseScriptsGenerator
             }
 
             //parent table delete statement
-            db.Append($"\tDELETE FROM {this.fullTableName} WHERE {this.whereClauseForDelete}{Environment.NewLine}");
+            db.Append($"\tDELETE FROM {this.fullTableName}{Environment.NewLine}");
+            db.Append($"\tWHERE {this.whereClauseForDelete}");
 
             var deleteStatement = db.ToString();
             return deleteStatement;
@@ -360,33 +380,42 @@ namespace DatabaseScriptsGenerator
         private string GenerateSoftDeleteStatement(DataTable ForeignKeyRelations, List<ColumnInfo> keyColumns)
         {
             StringBuilder db = new StringBuilder();
-            db.Append($"UPDATE {this.Name}{Environment.NewLine}");
-            db.Append($"SET{Environment.NewLine}");
-            foreach (DataRow r in ForeignKeyRelations.Rows)
-            {
-                var fkTableOwner = r[5].ToString();
-                var fkTableName = r[6].ToString();
+            int levelColumnInex = ForeignKeyRelations.Columns.Count - 1;
 
-                db.Append($"\t[{fkTableOwner}].[{fkTableName}].[is_deleted] = 1{Environment.NewLine}");
+            //to build delete statements in reverse order from most referenced to least referenced
+            var rows = ForeignKeyRelations.AsEnumerable().OrderByDescending(row => row[levelColumnInex]).ToArray();
+
+            //to construct delete statements for child(fk) tables
+            //grouping to get one group for each reference table (will have mutliple rows if primary key is a mutli-column key)
+            foreach (var g in rows.GroupBy(r => r[6].ToString()).ToArray())
+            {
+                StringBuilder currentDeleteStatementBuilder = new StringBuilder();
+                var firstRowInGroup = g.First();
+                var fkTableOwner = firstRowInGroup[5].ToString();
+                var fkTableName = firstRowInGroup[6].ToString();
+
+                currentDeleteStatementBuilder.Append($"\tUPDATE [{fkTableOwner}].[{fkTableName}]{Environment.NewLine}");
+                currentDeleteStatementBuilder.Append($"\tSET [{fkTableOwner}].[{fkTableName}].[{this.deletedFlagColumnName}] = 1{Environment.NewLine}");
+                currentDeleteStatementBuilder.Append($"\tFROM [{fkTableOwner}].[{fkTableName}]{Environment.NewLine}");
+                var pkTableName = CreateInnerJoinLine(g.ToArray(), currentDeleteStatementBuilder);
+
+                for (int i = (int)firstRowInGroup["level"] - 1; i >= 0; i--)
+                {
+                    //to get parent table rows for current parent (pk) table
+                    //will return mutliple rows if primary key is a mutli-column key
+                    var nextLevelRows = rows.Where(r => (int)r[levelColumnInex] == i && r[6].ToString() == pkTableName).ToArray();
+                    pkTableName = CreateInnerJoinLine(nextLevelRows, currentDeleteStatementBuilder);
+                }
+
+                currentDeleteStatementBuilder.Append($"\tWHERE {this.whereClauseForDelete}{Environment.NewLine}");
+                db.Append($"{currentDeleteStatementBuilder.ToString()}{Environment.NewLine}");
             }
 
+            //parent table delete statement
+            db.Append($"\tUPDATE {this.fullTableName} SET {this.fullTableName}.[{this.deletedFlagColumnName}] = 1{Environment.NewLine}");
+            db.Append($"\tWHERE {this.whereClauseForDelete}");
 
-            db.Append($"FROM {this.Name}{Environment.NewLine}");
-            foreach (DataRow r in ForeignKeyRelations.Rows)
-            {
-                var pkTableOwner = r[1].ToString();
-                var pkTableName = r[2].ToString();
-                var pkColumnName = r[3].ToString();
-                var fkTableOwner = r[5].ToString();
-                var fkTableName = r[6].ToString();
-                var fkColumnName = r[7].ToString();
-
-                db.Append($"INNER JOIN [{fkTableOwner}].[{fkTableName}] ON [{pkTableOwner}].[{pkTableName}].[{pkColumnName}] = [{fkTableOwner}].[{fkTableName}].[{fkColumnName}]{Environment.NewLine}");
-            }
-            this.whereClauseForDelete = string.Join(" AND ", keyColumns.Select(c => $"[{this.Owner}].[{this.Name}].[{c.Name}] = @{c.Name}"));
-            db.Append($"WHERE {this.whereClauseForDelete}");
             var deleteStatement = db.ToString();
-
             return deleteStatement;
         }
     }

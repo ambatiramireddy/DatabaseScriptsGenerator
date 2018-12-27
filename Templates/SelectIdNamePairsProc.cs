@@ -49,15 +49,37 @@ namespace DatabaseScriptsGenerator.Templates
             
             #line default
             #line hidden
-            this.Write("\r\n\r\nEND\r\nGO\r\n\r\n");
+            this.Write("\r\n");
+            
+            #line 8 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\SelectIdNamePairsProc.tt"
+if(DeleteFlagWhereClause != null){
+            
+            #line default
+            #line hidden
+            this.Write("\tWHERE ");
+            
+            #line 9 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\SelectIdNamePairsProc.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture(this. DeleteFlagWhereClause));
+            
+            #line default
+            #line hidden
+            this.Write("\r\n");
+            
+            #line 10 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\SelectIdNamePairsProc.tt"
+}
+            
+            #line default
+            #line hidden
+            this.Write("\r\nEND\r\nGO\r\n\r\n");
             return this.GenerationEnvironment.ToString();
         }
         
-        #line 17 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\SelectIdNamePairsProc.tt"
+        #line 20 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\SelectIdNamePairsProc.tt"
 
 public string FullTableName { get; set; }
 public string SelectIdNamePairsProcName { get; set; }
 public string IdNameColumnList { get; set; }
+public string DeleteFlagWhereClause { get; set; }
 
         
         #line default

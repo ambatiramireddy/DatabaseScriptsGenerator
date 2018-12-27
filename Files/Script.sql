@@ -65,7 +65,7 @@ BEGIN
 		[request_charges],
 		[can_adjust_request_start_time]
 	FROM [dbo].[Request]
-	WHERE id = @id
+	WHERE [id] = @id AND [is_deleted] IS NULL
 
 END
 GO
@@ -92,6 +92,7 @@ BEGIN
 		[request_charges],
 		[can_adjust_request_start_time]
 	FROM [dbo].[Request]
+	WHERE [is_deleted] IS NULL
 
 END
 GO
@@ -178,13 +179,14 @@ CREATE PROC [dbo].[usp_Delete_Request]
 AS
 BEGIN
 
-	DELETE [dbo].[ScreenSlotBooked]
+	UPDATE [dbo].[ScreenSlotBooked]
+	SET [dbo].[ScreenSlotBooked].[is_deleted] = 1
 	FROM [dbo].[ScreenSlotBooked]
 	INNER JOIN [dbo].[Request] ON [dbo].[Request].[id] = [dbo].[ScreenSlotBooked].[request_id]
-	WHERE [dbo].[Request].[id] = @id
+	WHERE [dbo].[Request].[id] = @id AND [dbo].[Request].[is_deleted] IS NULL
 
-	DELETE FROM [dbo].[Request] WHERE [dbo].[Request].[id] = @id
-
+	UPDATE [dbo].[Request] SET [dbo].[Request].[is_deleted] = 1
+	WHERE [dbo].[Request].[id] = @id AND [dbo].[Request].[is_deleted] IS NULL
 
 END        
 GO

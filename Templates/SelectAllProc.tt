@@ -5,6 +5,9 @@ BEGIN
 
 	SELECT <#= this.AllColumnList #>
 	FROM <#= this.FullTableName #>
+<#if(DeleteFlagWhereClause != null){#>
+	WHERE <#= this. DeleteFlagWhereClause #>
+<#}#>
 
 END
 GO
@@ -18,4 +21,5 @@ GO
 public string FullTableName { get; set; }
 public string SelectAllProcName { get; set; }
 public string AllColumnList { get; set; }
+public string DeleteFlagWhereClause { get; set; }
 #>

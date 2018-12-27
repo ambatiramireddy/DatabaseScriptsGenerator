@@ -16,11 +16,7 @@ namespace DatabaseScriptsGenerator
         {
             List<SqlTable> tables = new List<SqlTable>();
             tables.Add(new SqlTable { Owner = "dbo", Name = "Country", NameColumns = new string[] { "name" } });
-            tables.Add(new SqlTable { Owner = "dbo", Name = "State", NameColumns = new string[] { "name" } });
-            tables.Add(new SqlTable { Owner = "dbo", Name = "City", NameColumns = new string[] { "name" } });
-            tables.Add(new SqlTable { Owner = "dbo", Name = "Area", NameColumns = new string[] { "name" } });
-            tables.Add(new SqlTable { Owner = "dbo", Name = "Screen", NameColumns = new string[] { "name" } });
-            tables.Add(new SqlTable { Owner = "dbo", Name = "Request", NameColumns = new string[] { } });
+           
 
             using (var con = new SqlConnection(connectionString))
             {

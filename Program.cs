@@ -101,7 +101,7 @@ namespace DatabaseScriptsGenerator
                             var primaryKeyDetailsRow = constraintsTable.FirstOrDefault(row => row[0].ToString().Contains("PRIMARY KEY"));
                             if (primaryKeyDetailsRow != null)
                             {
-                                table.KeyColumnNames = primaryKeyDetailsRow[6].ToString().Split(',').Select(s => s.Trim(' ')).ToArray();
+                                table.UniqueKeyColumnNames = primaryKeyDetailsRow[6].ToString().Split(',').Select(s => s.Trim(' ')).ToArray();
                                 table.KeyColumnCategory = "primary";
                             }
                             else
@@ -109,17 +109,8 @@ namespace DatabaseScriptsGenerator
                                 var uniqueKeyDetailsRow = constraintsTable.FirstOrDefault(row => row[0].ToString().Contains("UNIQUE"));
                                 if (uniqueKeyDetailsRow != null)
                                 {
-                                    table.KeyColumnNames = uniqueKeyDetailsRow[6].ToString().Split(',').Select(s => s.Trim(' ')).ToArray();
+                                    table.UniqueKeyColumnNames = uniqueKeyDetailsRow[6].ToString().Split(',').Select(s => s.Trim(' ')).ToArray();
                                     table.KeyColumnCategory = "unique";
-                                }
-                                else
-                                {
-                                    var foreignKeyDetailsRow = constraintsTable.FirstOrDefault(row => row[0].ToString().Contains("FOREIGN KEY"));
-                                    if (foreignKeyDetailsRow != null)
-                                    {
-                                        table.KeyColumnNames = foreignKeyDetailsRow[6].ToString().Split(',').Select(s => s.Trim(' ')).ToArray();
-                                        table.KeyColumnCategory = "foreign";
-                                    }
                                 }
                             }
 

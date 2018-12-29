@@ -49,7 +49,7 @@ namespace DatabaseScriptsGenerator
         public string[] NameColumns { get; set; }
         public DataTable ColumnDetails { get; set; }
         public string IdentityColumn { get; set; }
-        public string[] KeyColumnNames { get; set; }
+        public string[] UniqueKeyColumnNames { get; set; }
         public Dictionary<string,string> DefaultColumnsAndValues { get; set; }
         
         public string KeyColumnCategory { get; set; }
@@ -72,7 +72,7 @@ namespace DatabaseScriptsGenerator
                 //specify length only for char, varchar, nvarchar types
                 string colLengthString = columnType.ToLower().Contains("char") ? $"({columnLength})" : string.Empty;
 
-                if (this.KeyColumnNames != null && this.KeyColumnNames.Any(c => c.Equals(columnName)))
+                if (this.UniqueKeyColumnNames != null && this.UniqueKeyColumnNames.Any(c => c.Equals(columnName)))
                 {
                     keyColumns.Add(new ColumnInfo
                     {
@@ -339,7 +339,7 @@ namespace DatabaseScriptsGenerator
                 KeyColumnType = CommonFunctions.ConvertSqlTypeToDotNetType(this.keyColumn),
                 KeyColumnCategory = this.KeyColumnCategory,
                 HasNameColumn = this.NameColumns.Length > 0,
-                KeyColumnNames = this.KeyColumnNames,
+                KeyColumnNames = this.UniqueKeyColumnNames,
                 KeyColumnAndDotNetTypeList = this.keyColumnAndDotNetTypeList,
                 KeyColumnDotNetVariableNameList = this.keyColumnDotNetVariableNameList
             }.TransformText().TrimStart('\r', '\n');

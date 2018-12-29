@@ -5,7 +5,7 @@
     "NameColumns": [],
     "ColumnDetails": null,
     "IdentityColumn": null,
-    "KeyColumnNames": null,
+    "UniqueKeyColumnNames": null,
     "DefaultColumnsAndValues": null,
     "KeyColumnCategory": null,
     "ForeignKeyRelations": null
@@ -16,7 +16,7 @@
     "NameColumns": [],
     "ColumnDetails": null,
     "IdentityColumn": null,
-    "KeyColumnNames": null,
+    "UniqueKeyColumnNames": null,
     "DefaultColumnsAndValues": null,
     "KeyColumnCategory": null,
     "ForeignKeyRelations": null
@@ -27,18 +27,7 @@
     "NameColumns": [],
     "ColumnDetails": null,
     "IdentityColumn": null,
-    "KeyColumnNames": null,
-    "DefaultColumnsAndValues": null,
-    "KeyColumnCategory": null,
-    "ForeignKeyRelations": null
-  },
-  {
-    "Owner": "dbo",
-    "Name": "ScreenCharges",
-    "NameColumns": [],
-    "ColumnDetails": null,
-    "IdentityColumn": null,
-    "KeyColumnNames": null,
+    "UniqueKeyColumnNames": null,
     "DefaultColumnsAndValues": null,
     "KeyColumnCategory": null,
     "ForeignKeyRelations": null
@@ -49,7 +38,7 @@
     "NameColumns": [],
     "ColumnDetails": null,
     "IdentityColumn": null,
-    "KeyColumnNames": null,
+    "UniqueKeyColumnNames": null,
     "DefaultColumnsAndValues": null,
     "KeyColumnCategory": null,
     "ForeignKeyRelations": null
@@ -60,7 +49,7 @@
     "NameColumns": [],
     "ColumnDetails": null,
     "IdentityColumn": null,
-    "KeyColumnNames": null,
+    "UniqueKeyColumnNames": null,
     "DefaultColumnsAndValues": null,
     "KeyColumnCategory": null,
     "ForeignKeyRelations": null
@@ -71,7 +60,7 @@
     "NameColumns": [],
     "ColumnDetails": null,
     "IdentityColumn": null,
-    "KeyColumnNames": null,
+    "UniqueKeyColumnNames": null,
     "DefaultColumnsAndValues": null,
     "KeyColumnCategory": null,
     "ForeignKeyRelations": null
@@ -82,7 +71,18 @@
     "NameColumns": [],
     "ColumnDetails": null,
     "IdentityColumn": null,
-    "KeyColumnNames": null,
+    "UniqueKeyColumnNames": null,
+    "DefaultColumnsAndValues": null,
+    "KeyColumnCategory": null,
+    "ForeignKeyRelations": null
+  },
+  {
+    "Owner": "dbo",
+    "Name": "ScreenCharges",
+    "NameColumns": [],
+    "ColumnDetails": null,
+    "IdentityColumn": null,
+    "UniqueKeyColumnNames": null,
     "DefaultColumnsAndValues": null,
     "KeyColumnCategory": null,
     "ForeignKeyRelations": null
@@ -93,18 +93,7 @@
     "NameColumns": [],
     "ColumnDetails": null,
     "IdentityColumn": null,
-    "KeyColumnNames": null,
-    "DefaultColumnsAndValues": null,
-    "KeyColumnCategory": null,
-    "ForeignKeyRelations": null
-  },
-  {
-    "Owner": "dbo",
-    "Name": "ScreenDownTime",
-    "NameColumns": [],
-    "ColumnDetails": null,
-    "IdentityColumn": null,
-    "KeyColumnNames": null,
+    "UniqueKeyColumnNames": null,
     "DefaultColumnsAndValues": null,
     "KeyColumnCategory": null,
     "ForeignKeyRelations": null
@@ -115,7 +104,7 @@
     "NameColumns": [],
     "ColumnDetails": null,
     "IdentityColumn": null,
-    "KeyColumnNames": null,
+    "UniqueKeyColumnNames": null,
     "DefaultColumnsAndValues": null,
     "KeyColumnCategory": null,
     "ForeignKeyRelations": null
@@ -126,7 +115,7 @@
     "NameColumns": [],
     "ColumnDetails": null,
     "IdentityColumn": null,
-    "KeyColumnNames": null,
+    "UniqueKeyColumnNames": null,
     "DefaultColumnsAndValues": null,
     "KeyColumnCategory": null,
     "ForeignKeyRelations": null
@@ -137,7 +126,7 @@
     "NameColumns": [],
     "ColumnDetails": null,
     "IdentityColumn": null,
-    "KeyColumnNames": null,
+    "UniqueKeyColumnNames": null,
     "DefaultColumnsAndValues": null,
     "KeyColumnCategory": null,
     "ForeignKeyRelations": null
@@ -148,7 +137,7 @@
     "NameColumns": [],
     "ColumnDetails": null,
     "IdentityColumn": null,
-    "KeyColumnNames": null,
+    "UniqueKeyColumnNames": null,
     "DefaultColumnsAndValues": null,
     "KeyColumnCategory": null,
     "ForeignKeyRelations": null
@@ -159,7 +148,7 @@
     "NameColumns": [],
     "ColumnDetails": null,
     "IdentityColumn": null,
-    "KeyColumnNames": null,
+    "UniqueKeyColumnNames": null,
     "DefaultColumnsAndValues": null,
     "KeyColumnCategory": null,
     "ForeignKeyRelations": null
@@ -170,7 +159,7 @@
     "NameColumns": [],
     "ColumnDetails": null,
     "IdentityColumn": null,
-    "KeyColumnNames": null,
+    "UniqueKeyColumnNames": null,
     "DefaultColumnsAndValues": null,
     "KeyColumnCategory": null,
     "ForeignKeyRelations": null
@@ -181,7 +170,7 @@
     "NameColumns": [],
     "ColumnDetails": null,
     "IdentityColumn": null,
-    "KeyColumnNames": null,
+    "UniqueKeyColumnNames": null,
     "DefaultColumnsAndValues": null,
     "KeyColumnCategory": null,
     "ForeignKeyRelations": null
@@ -192,7 +181,7 @@
     "NameColumns": [],
     "ColumnDetails": null,
     "IdentityColumn": null,
-    "KeyColumnNames": null,
+    "UniqueKeyColumnNames": null,
     "DefaultColumnsAndValues": null,
     "KeyColumnCategory": null,
     "ForeignKeyRelations": null
@@ -203,7 +192,7 @@
     "NameColumns": [],
     "ColumnDetails": null,
     "IdentityColumn": null,
-    "KeyColumnNames": null,
+    "UniqueKeyColumnNames": null,
     "DefaultColumnsAndValues": null,
     "KeyColumnCategory": null,
     "ForeignKeyRelations": null
@@ -214,7 +203,7 @@
     "NameColumns": [],
     "ColumnDetails": null,
     "IdentityColumn": null,
-    "KeyColumnNames": null,
+    "UniqueKeyColumnNames": null,
     "DefaultColumnsAndValues": null,
     "KeyColumnCategory": null,
     "ForeignKeyRelations": null
@@ -225,7 +214,18 @@
     "NameColumns": [],
     "ColumnDetails": null,
     "IdentityColumn": null,
-    "KeyColumnNames": null,
+    "UniqueKeyColumnNames": null,
+    "DefaultColumnsAndValues": null,
+    "KeyColumnCategory": null,
+    "ForeignKeyRelations": null
+  },
+  {
+    "Owner": "dbo",
+    "Name": "ScreenDownTime",
+    "NameColumns": [],
+    "ColumnDetails": null,
+    "IdentityColumn": null,
+    "UniqueKeyColumnNames": null,
     "DefaultColumnsAndValues": null,
     "KeyColumnCategory": null,
     "ForeignKeyRelations": null
@@ -236,7 +236,7 @@
     "NameColumns": [],
     "ColumnDetails": null,
     "IdentityColumn": null,
-    "KeyColumnNames": null,
+    "UniqueKeyColumnNames": null,
     "DefaultColumnsAndValues": null,
     "KeyColumnCategory": null,
     "ForeignKeyRelations": null
@@ -247,7 +247,7 @@
     "NameColumns": [],
     "ColumnDetails": null,
     "IdentityColumn": null,
-    "KeyColumnNames": null,
+    "UniqueKeyColumnNames": null,
     "DefaultColumnsAndValues": null,
     "KeyColumnCategory": null,
     "ForeignKeyRelations": null
@@ -258,7 +258,7 @@
     "NameColumns": [],
     "ColumnDetails": null,
     "IdentityColumn": null,
-    "KeyColumnNames": null,
+    "UniqueKeyColumnNames": null,
     "DefaultColumnsAndValues": null,
     "KeyColumnCategory": null,
     "ForeignKeyRelations": null

@@ -16,7 +16,14 @@ namespace DatabaseScriptsGenerator
 
         static void Main(string[] args)
         {
-            List<SqlTable> tables = GetTableLsit();
+            List<SqlTable> tables = new List<SqlTable>();
+            tables.Add(new SqlTable { Name = "Screen" });
+
+            if (tables.Count == 0)
+            {
+                tables = GetTablesList();
+            }
+
             using (var con = new SqlConnection(connectionString))
             {
                 con.Open();
@@ -33,9 +40,14 @@ namespace DatabaseScriptsGenerator
                     }
                 }
             }
+
+            var solutionRootFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../");
+            var dbProjectPath = Path.Combine(solutionRootFolder, "DatabaseScriptsGenerator/DatabaseScriptsGenerator.csproj");
+            var dbScriptPath = Path.Combine(solutionRootFolder, $"DatabaseScriptsGenerator/Files/Settings.json");
+            CommonFunctions.WriteFileToProject("Content", dbScriptPath, dbProjectPath, JsonConvert.SerializeObject(tables, Formatting.Indented));
         }
 
-        static List<SqlTable> GetTableLsit()
+        static List<SqlTable> GetTablesList()
         {
             List<SqlTable> tables = new List<SqlTable>();
             using (var con = new SqlConnection(connectionString))
@@ -50,17 +62,12 @@ namespace DatabaseScriptsGenerator
 
                         foreach (DataRow row in ds.Tables[0].Rows)
                         {
-                            tables.Add(new SqlTable { Owner = "dbo", Name = row[0].ToString(), NameColumns = new string[] { } });
+                            tables.Add(new SqlTable { Name = row[0].ToString() });
                         }
                     }
                 }
 
             }
-
-            var solutionRootFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../");
-            var dbProjectPath = Path.Combine(solutionRootFolder, "DatabaseScriptsGenerator/DatabaseScriptsGenerator.csproj");
-            var dbScriptPath = Path.Combine(solutionRootFolder, $"DatabaseScriptsGenerator/Files/Settings.json");
-            CommonFunctions.WriteFileToProject("Content", dbScriptPath, dbProjectPath, JsonConvert.SerializeObject(tables, Formatting.Indented));
 
             return tables;
         }
@@ -82,6 +89,7 @@ namespace DatabaseScriptsGenerator
                     {
                         var ds = new DataSet();
                         da.Fill(ds);
+                        table.Owner = ds.Tables[tableNameTableIndex].Rows[0][1].ToString();
                         table.ColumnDetails = ds.Tables[tableSchemaTableIndex];
                         var identityColumn = ds.Tables[tableIdentityColDetailsTableIndex].Rows[0][0].ToString();
                         table.IdentityColumn = identityColumn.StartsWith("No identity") ? string.Empty : identityColumn;
@@ -97,25 +105,56 @@ namespace DatabaseScriptsGenerator
 
                         if (tableConstraintsTableIndex != -1)
                         {
-                            var constraintsTable = ds.Tables[tableConstraintsTableIndex].AsEnumerable();
-                            var primaryKeyDetailsRow = constraintsTable.FirstOrDefault(row => row[0].ToString().Contains("PRIMARY KEY"));
-                            if (primaryKeyDetailsRow != null)
+                            var constraintsTableRows = ds.Tables[tableConstraintsTableIndex].AsEnumerable().ToArray();
+                            Dictionary<string, string> uniqueForeignKeyDetails = new Dictionary<string, string>();
+                            Dictionary<string, string> defaultColumnsAndValues = new Dictionary<string, string>();
+                            Dictionary<string, string> foreignKeyDetails = new Dictionary<string, string>();
+                            List<string> primaryColumnNames = new List<string>();
+                            List<string> uniqueKeyColumnNames = new List<string>();
+                            int i = 0;
+                            while (i < constraintsTableRows.Length)
                             {
-                                table.UniqueKeyColumnNames = primaryKeyDetailsRow[6].ToString().Split(',').Select(s => s.Trim(' ')).ToArray();
-                                table.KeyColumnCategory = "primary";
-                            }
-                            else
-                            {
-                                var uniqueKeyDetailsRow = constraintsTable.FirstOrDefault(row => row[0].ToString().Contains("UNIQUE"));
-                                if (uniqueKeyDetailsRow != null)
+                                var row = constraintsTableRows[i];
+                                var firstColumnValue = row[0].ToString();
+                                if (firstColumnValue.StartsWith("FOREIGN KEY"))
                                 {
-                                    table.UniqueKeyColumnNames = uniqueKeyDetailsRow[6].ToString().Split(',').Select(s => s.Trim(' ')).ToArray();
-                                    table.KeyColumnCategory = "unique";
+                                    foreignKeyDetails.Add(row[6].ToString(), constraintsTableRows[i + 1][6].ToString().Replace("REFERENCES",""));
+                                    i = i + 2;
+                                    continue;
                                 }
+                                else if (firstColumnValue.StartsWith("PRIMARY KEY"))
+                                {
+                                    primaryColumnNames.AddRange(row[6].ToString().Split(',').Select(s => s.Trim(' ')));
+                                }
+                                else if (firstColumnValue.StartsWith("UNIQUE"))
+                                {
+                                    uniqueKeyColumnNames.AddRange(row[6].ToString().Split(',').Select(s => s.Trim(' ')));
+                                }
+                                else if (firstColumnValue.StartsWith("DEFAULT"))
+                                {
+                                    defaultColumnsAndValues.Add(row[0].ToString().Split(' ').Last(), row[6].ToString().TrimStart('(').TrimEnd(')').Replace("N'", "\"").Replace("'", "\""));
+                                }
+
+                                i = i + 1;
                             }
 
-                            var defaultColumnsAndValues = constraintsTable.Where(row => row[0].ToString().Contains("DEFAULT"))
-                                .ToDictionary(row => row[0].ToString().Split(' ').Last(), row => row[6].ToString().TrimStart('(').TrimEnd(')').Replace("N'", "\"").Replace("'", "\""));
+                            if (primaryColumnNames.Count > 0)
+                            {
+                                table.PrimaryOrUniqueKeyColumnNames = primaryColumnNames;
+                                table.KeyColumnCategory = "primary";
+                            }
+                            else if (uniqueKeyColumnNames.Count > 0)
+                            {
+                                table.PrimaryOrUniqueKeyColumnNames = uniqueKeyColumnNames;
+                                table.KeyColumnCategory = "unique";
+                            }
+
+                            foreach (var g in foreignKeyDetails.GroupBy(kv => kv.Value))
+                            {
+                                uniqueForeignKeyDetails.Add(g.First().Key, g.Key);
+                            }
+
+                            table.ForeignKeyReferencingColumns = uniqueForeignKeyDetails;
                             table.DefaultColumnsAndValues = defaultColumnsAndValues;
                         }
                     }

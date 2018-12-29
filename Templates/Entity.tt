@@ -6,7 +6,7 @@ namespace AddAppAPI.Models
 	public class <#= this.TableName #>
 	{
 <#foreach(var c in Columns){#>
-		public <#= this.GetType(c) #> <#= this.GetName(c.Name) #> { get; set; }<#if(c.DefaultValue != null){#> = <#= this.GetValue(c) #>;<#}#>
+		public <#= this.GetType(c) #> <#= this.GetName(c.Name) #> { get; set; }<#if(c.DefaultValue != null){#><#= this.GetValue(c) #><#}#>
 
 <#}#>
 	}

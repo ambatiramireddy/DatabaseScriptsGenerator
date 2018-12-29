@@ -37,7 +37,9 @@ namespace DatabaseScriptsGenerator
         string softDeleteStatement;
         string whereClauseForDelete;
         string deletedFlagColumnName;
-
+        bool hasIdColumn;
+        List<string> nameColumns = new List<string>();
+        List<ColumnInfo> fkColumns = new List<ColumnInfo>();
 
         public SqlTable()
         {
@@ -46,10 +48,11 @@ namespace DatabaseScriptsGenerator
 
         public string Owner { get; set; }
         public string Name { get; set; }
-        public string[] NameColumns { get; set; }
+        
         public DataTable ColumnDetails { get; set; }
         public string IdentityColumn { get; set; }
-        public string[] UniqueKeyColumnNames { get; set; }
+        public List<string> PrimaryOrUniqueKeyColumnNames { get; set; }
+        public Dictionary<string, string> ForeignKeyReferencingColumns { get; set; }
         public Dictionary<string,string> DefaultColumnsAndValues { get; set; }
         
         public string KeyColumnCategory { get; set; }
@@ -58,8 +61,9 @@ namespace DatabaseScriptsGenerator
         public string GenerateProcs()
         {
             this.fullTableName = $"[{this.Owner}].[{this.Name}]";
-            List<ColumnInfo> keyColumns = new List<ColumnInfo>();
+            List<ColumnInfo> primaryOrUniqueKeyColumns = new List<ColumnInfo>();
             List<ColumnInfo> nonKeyColumns = new List<ColumnInfo>();
+            fkColumns = new List<ColumnInfo>();
             foreach (DataRow row in ColumnDetails.Rows)
             {
                 var columnName = row[0].ToString();
@@ -72,9 +76,19 @@ namespace DatabaseScriptsGenerator
                 //specify length only for char, varchar, nvarchar types
                 string colLengthString = columnType.ToLower().Contains("char") ? $"({columnLength})" : string.Empty;
 
-                if (this.UniqueKeyColumnNames != null && this.UniqueKeyColumnNames.Any(c => c.Equals(columnName)))
+                var lowerCaseColumnName = columnName.ToLower();
+                if (lowerCaseColumnName.Equals("id"))
                 {
-                    keyColumns.Add(new ColumnInfo
+                    this.hasIdColumn = true;
+                }
+                else if (lowerCaseColumnName.Contains("name"))
+                {
+                    this.nameColumns.Add(columnName);
+                }
+
+                if (this.PrimaryOrUniqueKeyColumnNames != null && this.PrimaryOrUniqueKeyColumnNames.Any(c => c.Equals(columnName)))
+                {
+                    primaryOrUniqueKeyColumns.Add(new ColumnInfo
                     {
                         Name = columnName,
                         Type = $"{columnType}{colLengthString}",
@@ -95,6 +109,17 @@ namespace DatabaseScriptsGenerator
                         columnDefaultValue = this.DefaultColumnsAndValues[columnName];
                     }
 
+                    if (this.ForeignKeyReferencingColumns != null && this.ForeignKeyReferencingColumns.ContainsKey(columnName))
+                    {
+                        var parts = ForeignKeyReferencingColumns[columnName].Split('.').Last().TrimEnd(')').Split(' ');
+                        fkColumns.Add(new ColumnInfo
+                        {
+                            Name = columnName,
+                            Type = $"{columnType}{colLengthString}",
+                            ReferencingColumnName = parts[0]+ CommonFunctions.ConvertDbColumnNameToCSharpPropName(parts[1].TrimStart('('))
+                        });
+                    }
+
                     nonKeyColumns.Add(new ColumnInfo
                     {
                         Name = columnName,
@@ -105,30 +130,30 @@ namespace DatabaseScriptsGenerator
                 }
             }
 
-            allColumns = keyColumns.Concat(nonKeyColumns).ToList();
+            allColumns = primaryOrUniqueKeyColumns.Concat(nonKeyColumns).ToList();
 
             var indentation = string.Format("{0}{1}", Environment.NewLine, new string('\t', 2));
             var oneTabSeparator = string.Format(",{0}{1}", Environment.NewLine, new string('\t', 1));
             var twoTabSeparator = string.Format(",{0}{1}", Environment.NewLine, new string('\t', 2));
 
-            if (keyColumns.Count > 0)
+            if (primaryOrUniqueKeyColumns.Count > 0)
             {
-                this.keyColumn = keyColumns[0];
-                this.keyColumnAndTypeList = string.Join("," + Environment.NewLine, keyColumns.Select(c => $"@{c.Name} {c.Type}"));
-                this.keyColumnAndDotNetTypeList = string.Join(", ", keyColumns.Select(c => $"{CommonFunctions.ConvertSqlTypeToDotNetType(c)} {CommonFunctions.ConvertDbColumnNameToCSharpVariableName(c.Name)}"));
-                this.keyColumnDotNetVariableNameList = string.Join(" and ", keyColumns.Select(c => $"{CommonFunctions.ConvertDbColumnNameToCSharpVariableName(c.Name)}"));
-                this.keyColumnList = string.Join(twoTabSeparator, keyColumns.Select(c => $"[{c.Name}]"));
+                this.keyColumn = primaryOrUniqueKeyColumns[0];
+                this.keyColumnAndTypeList = string.Join("," + Environment.NewLine, primaryOrUniqueKeyColumns.Select(c => $"@{c.Name} {c.Type}"));
+                this.keyColumnAndDotNetTypeList = string.Join(", ", primaryOrUniqueKeyColumns.Select(c => $"{CommonFunctions.ConvertSqlTypeToDotNetType(c)} {CommonFunctions.ConvertDbColumnNameToCSharpVariableName(c.Name)}"));
+                this.keyColumnDotNetVariableNameList = string.Join(" and ", primaryOrUniqueKeyColumns.Select(c => $"{CommonFunctions.ConvertDbColumnNameToCSharpVariableName(c.Name)}"));
+                this.keyColumnList = string.Join(twoTabSeparator, primaryOrUniqueKeyColumns.Select(c => $"[{c.Name}]"));
 
-                this.onClause = string.Join(" AND ", keyColumns.Select(c => $"t.{c.Name} = s.{c.Name}"));
-                this.whereClauseForDelete = string.Join(" AND ", keyColumns.Select(c => $"{this.fullTableName}.[{c.Name}] = @{c.Name}"));
+                this.onClause = string.Join(" AND ", primaryOrUniqueKeyColumns.Select(c => $"t.{c.Name} = s.{c.Name}"));
+                this.whereClauseForDelete = string.Join(" AND ", primaryOrUniqueKeyColumns.Select(c => $"{this.fullTableName}.[{c.Name}] = @{c.Name}"));
                 if (this.deletedFlagColumnName == null)
                 {
-                    this.whereClause = string.Join(" AND ", keyColumns.Select(c => $"[{c.Name}] = @{c.Name}"));
+                    this.whereClause = string.Join(" AND ", primaryOrUniqueKeyColumns.Select(c => $"[{c.Name}] = @{c.Name}"));
                 }
                 else
                 {
                     this.deleteFlagWhereClause = $"[{this.deletedFlagColumnName}] = 0";
-                    this.whereClause = string.Join(" AND ", keyColumns.Select(c => $"[{c.Name}] = @{c.Name}")) + $" AND {this.deleteFlagWhereClause}";
+                    this.whereClause = string.Join(" AND ", primaryOrUniqueKeyColumns.Select(c => $"[{c.Name}] = @{c.Name}")) + $" AND {this.deleteFlagWhereClause}";
                 }
             }
 
@@ -176,18 +201,18 @@ namespace DatabaseScriptsGenerator
 
             if (this.deletedFlagColumnName != null)
             {
-                this.softDeleteStatement = GenerateSoftDeleteStatement(ForeignKeyRelations, keyColumns);
+                this.softDeleteStatement = GenerateSoftDeleteStatement(ForeignKeyRelations, primaryOrUniqueKeyColumns);
                 this.whereClauseForDelete = $"{this.fullTableName}.[{this.deletedFlagColumnName}] = 1";
-                this.hardDeleteStatement = GenerateHardDeleteStatement(ForeignKeyRelations, keyColumns);
+                this.hardDeleteStatement = GenerateHardDeleteStatement(ForeignKeyRelations, primaryOrUniqueKeyColumns);
             }
             else
             {
-                this.hardDeleteStatement = GenerateHardDeleteStatement(ForeignKeyRelations, keyColumns);
+                this.hardDeleteStatement = GenerateHardDeleteStatement(ForeignKeyRelations, primaryOrUniqueKeyColumns);
             }
 
-            if (this.NameColumns.Length > 0)
+            if (this.nameColumns.Count > 0 && hasIdColumn)
             {
-                this.idNameColumnList = string.Format("[id], ({0}) as [name]", string.Join(" + ' ' + ", this.NameColumns.Select(s => $"[{s}]")));
+                this.idNameColumnList = string.Format("[id], ({0}) as [name]", string.Join(" + ' ' + ", this.nameColumns.Select(s => $"[{s}]")));
             }
 
             return this.GenerateScripts();
@@ -251,7 +276,7 @@ namespace DatabaseScriptsGenerator
                 scriptBuilder.Append(updateProc);
                 dropScriptBuilder.Append(new DropProc() { ProcName = updateProcName }.TransformText().TrimStart('\r', '\n'));
 
-                if (this.NameColumns.Length > 0)
+                if (idNameColumnList != null)
                 {
                     var selectIdNamePairsProcName = $"[{this.Owner}].[usp_Select_{this.Name}_IdNamePairs]";
                     var selectIdNamePairsProc = new SelectIdNamePairsProc()
@@ -308,6 +333,25 @@ namespace DatabaseScriptsGenerator
                 dropScriptBuilder.Append(new DropProc() { ProcName = hardDeleteProcName }.TransformText().TrimStart('\r', '\n'));
             }
 
+            if (this.fkColumns.Count > 0 && this.hasIdColumn)
+            {
+                foreach (var c in this.fkColumns)
+                {
+                    var procName = $"[{this.Owner}].[usp_Select_{this.Name}Id_By_{c.ReferencingColumnName}]";
+                    var proc = new SelectPKColumnByFKColumnProc()
+                    {
+                        FullTableName = this.fullTableName,
+                        ProcName = procName,
+                        VariablesList = $"@{c.ReferencingColumnName} {c.Type}",
+                        PkColumnList = string.Join(",", this.keyColumnList),
+                        WhereClause = $"[{c.Name}] = @{c.ReferencingColumnName}" + (this.deleteFlagWhereClause == null ? "" : $" AND {this.deleteFlagWhereClause}")
+                    }.TransformText().TrimStart('\r', '\n');
+
+                    scriptBuilder.Append(proc);
+                    dropScriptBuilder.Append(new DropProc() { ProcName = procName }.TransformText().TrimStart('\r', '\n'));
+                }
+            }
+
             dropScriptBuilder.Append(new DropType() { TableName = this.Name, TypeName = tableTypeName }.TransformText().TrimStart('\r', '\n'));
 
             scriptBuilder.Insert(0, dropScriptBuilder.ToString());
@@ -338,14 +382,14 @@ namespace DatabaseScriptsGenerator
                 PluralCaseTableName = lowerCaseTableName.EndsWith("y") ? (lowerCaseTableName.TrimEnd('y') + "ies") : (lowerCaseTableName + "s"),
                 KeyColumnType = CommonFunctions.ConvertSqlTypeToDotNetType(this.keyColumn),
                 KeyColumnCategory = this.KeyColumnCategory,
-                HasNameColumn = this.NameColumns.Length > 0,
-                KeyColumnNames = this.UniqueKeyColumnNames,
+                HasNameColumn = this.nameColumns.Count > 0,
+                KeyColumnNames = this.PrimaryOrUniqueKeyColumnNames,
                 KeyColumnAndDotNetTypeList = this.keyColumnAndDotNetTypeList,
                 KeyColumnDotNetVariableNameList = this.keyColumnDotNetVariableNameList
             }.TransformText().TrimStart('\r', '\n');
 
             var entityControllerPath = Path.Combine(solutionRootFolder, $"AddAppAPI/Controllers/{this.Name}Controller.cs");
-            CommonFunctions.WriteFileToProject("Compile", entityControllerPath, apiProjectPath, entityController);
+            //CommonFunctions.WriteFileToProject("Compile", entityControllerPath, apiProjectPath, entityController);
 
             return script;
         }

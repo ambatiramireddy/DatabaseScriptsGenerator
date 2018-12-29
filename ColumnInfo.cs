@@ -7,5 +7,7 @@
         public bool IsKeyColumn { get; set; }
         public bool Nullable { get; set; }
         public string DefaultValue { get; set; }
+
+        public string ReferencingColumnName { get; set; }
     }
 }

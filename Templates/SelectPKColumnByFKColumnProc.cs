@@ -12,16 +12,15 @@ namespace DatabaseScriptsGenerator.Templates
     using System.Linq;
     using System.Text;
     using System.Collections.Generic;
-    using DatabaseScriptsGenerator;
     using System;
     
     /// <summary>
     /// Class to produce the template output
     /// </summary>
     
-    #line 1 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\Entity.tt"
+    #line 1 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\SelectPKColumnByFKColumnProc.tt"
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.TextTemplating", "15.0.0.0")]
-    public partial class Entity : EntityBase
+    public partial class SelectPKColumnByFKColumnProc : SelectPKColumnByFKColumnProcBase
     {
 #line hidden
         /// <summary>
@@ -29,80 +28,52 @@ namespace DatabaseScriptsGenerator.Templates
         /// </summary>
         public virtual string TransformText()
         {
-            this.Write("\r\nusing System;\r\n\r\nnamespace AddAppAPI.Models\r\n{\r\n\tpublic class ");
+            this.Write("\r\nCREATE PROC ");
             
-            #line 6 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\Entity.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(this.TableName));
-            
-            #line default
-            #line hidden
-            this.Write("\r\n\t{\r\n");
-            
-            #line 8 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\Entity.tt"
-foreach(var c in Columns){
-            
-            #line default
-            #line hidden
-            this.Write("\t\tpublic ");
-            
-            #line 9 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\Entity.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(this.GetType(c)));
-            
-            #line default
-            #line hidden
-            this.Write(" ");
-            
-            #line 9 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\Entity.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(this.GetName(c.Name)));
-            
-            #line default
-            #line hidden
-            this.Write(" { get; set; }");
-            
-            #line 9 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\Entity.tt"
-if(c.DefaultValue != null){
-            
-            #line default
-            #line hidden
-            
-            #line 9 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\Entity.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(this.GetValue(c)));
-            
-            #line default
-            #line hidden
-            
-            #line 9 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\Entity.tt"
-}
+            #line 2 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\SelectPKColumnByFKColumnProc.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture(this.ProcName));
             
             #line default
             #line hidden
             this.Write("\r\n");
             
-            #line 11 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\Entity.tt"
-}
+            #line 3 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\SelectPKColumnByFKColumnProc.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture(this.VariablesList));
             
             #line default
             #line hidden
-            this.Write("\t}\r\n}\r\n\r\n");
+            this.Write("\r\nAS\r\nBEGIN\r\n\r\n\tSELECT ");
+            
+            #line 7 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\SelectPKColumnByFKColumnProc.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture(this.PkColumnList));
+            
+            #line default
+            #line hidden
+            this.Write("\r\n\tFROM ");
+            
+            #line 8 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\SelectPKColumnByFKColumnProc.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture(this.FullTableName));
+            
+            #line default
+            #line hidden
+            this.Write("\r\n\tWHERE ");
+            
+            #line 9 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\SelectPKColumnByFKColumnProc.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture(this.WhereClause));
+            
+            #line default
+            #line hidden
+            this.Write("\r\n\r\nEND\r\nGO\r\n\r\n");
             return this.GenerationEnvironment.ToString();
         }
         
-        #line 21 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\Entity.tt"
+        #line 19 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\SelectPKColumnByFKColumnProc.tt"
 
-public string TableName { get; set; }
-public List<ColumnInfo> Columns { get; set; }
-private string GetType(ColumnInfo c)
-{
-  return CommonFunctions.ConvertSqlTypeToDotNetType(c);
-}
-private string GetName(string name)
-{
-  return CommonFunctions.ConvertDbColumnNameToCSharpPropName(name);
-}
-private string GetValue(ColumnInfo c)
-{
-  return CommonFunctions.ConvertSqlValueToDotNetValue(c);
-}
+public string FullTableName { get; set; }
+public string ProcName { get; set; }
+public string PkColumnList { get; set; }
+public string VariablesList { get; set; }
+public string WhereClause { get; set; }
 
         
         #line default
@@ -116,7 +87,7 @@ private string GetValue(ColumnInfo c)
     /// Base class for this transformation
     /// </summary>
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.TextTemplating", "15.0.0.0")]
-    public class EntityBase
+    public class SelectPKColumnByFKColumnProcBase
     {
         #region Fields
         private global::System.Text.StringBuilder generationEnvironmentField;

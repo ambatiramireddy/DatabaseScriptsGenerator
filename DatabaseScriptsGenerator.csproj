@@ -88,6 +88,11 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
+    <Compile Include="Templates\SelectPKColumnByFKColumnProc.cs">
+      <DependentUpon>SelectPKColumnByFKColumnProc.tt</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
     <Compile Include="Templates\TableType.cs">
       <DependentUpon>TableType.tt</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -111,6 +116,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="Files\Settings.json" />
     <None Include="Tables\Settings.json" />
     <None Include="packages.config" />
   </ItemGroup>
@@ -122,6 +128,7 @@
     <Content Include="Tables\Login.sql" />
     <Content Include="Tables\MessageTemplate.sql" />
     <Content Include="Tables\MessageTemplateCategory.sql" />
+    <Content Include="Tables\MessageType.sql" />
     <Content Include="Tables\OurMessage.sql" />
     <Content Include="Tables\OwnerMessage.sql" />
     <Content Include="Tables\Request.sql" />
@@ -168,6 +175,10 @@
     <Content Include="Templates\SelectIdNamePairsProc.tt">
       <Generator>TextTemplatingFilePreprocessor</Generator>
       <LastGenOutput>SelectIdNamePairsProc.cs</LastGenOutput>
+    </Content>
+    <Content Include="Templates\SelectPKColumnByFKColumnProc.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>SelectPKColumnByFKColumnProc.cs</LastGenOutput>
     </Content>
     <Content Include="Templates\TableType.tt">
       <Generator>TextTemplatingFilePreprocessor</Generator>

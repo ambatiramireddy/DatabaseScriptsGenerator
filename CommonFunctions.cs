@@ -111,10 +111,11 @@ namespace DatabaseScriptsGenerator
             var sqlType = column.Type;
             switch (sqlType)
             {
-               
+
                 case "bit":
                     {
-                        value = (column.DefaultValue == "0" ? "false" : "true");
+                        //in c#, default value for bool type is false. hence, no need to set to false
+                        value = (column.DefaultValue == "1" ? "true" : string.Empty);
                         break;
                     }
                 default:
@@ -124,7 +125,7 @@ namespace DatabaseScriptsGenerator
                     }
             }
 
-            return value;
+            return value == string.Empty ? string.Empty : $" = {value};";
         }
 
         public static void WriteFileToProject(string itemType, string filePath, string projectPath, string content)

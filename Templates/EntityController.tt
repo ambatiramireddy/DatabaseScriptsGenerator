@@ -129,7 +129,7 @@ public string PluralCaseTableName { get; set; }
 public string KeyColumnType { get; set; }
 public string KeyColumnCategory { get; set; }
 public bool HasNameColumn { get; set; }
-public string[] KeyColumnNames { get; set; }
+public List<string> KeyColumnNames { get; set; }
 public string KeyColumnAndDotNetTypeList { get; set; }
 public string KeyColumnDotNetVariableNameList { get; set; }
 #>

@@ -46,18 +46,39 @@ foreach(var c in Columns){
             this.Write("\t\tpublic ");
             
             #line 9 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\Entity.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(CommonFunctions.ConvertSqlTypeToDotNetType(c)));
+            this.Write(this.ToStringHelper.ToStringWithCulture(this.GetType(c)));
             
             #line default
             #line hidden
             this.Write(" ");
             
             #line 9 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\Entity.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(CommonFunctions.ConvertDbColumnNameToCSharpPropName(c.Name)));
+            this.Write(this.ToStringHelper.ToStringWithCulture(this.GetName(c.Name)));
             
             #line default
             #line hidden
-            this.Write(" { get; set; }\r\n\r\n");
+            this.Write(" { get; set; }");
+            
+            #line 9 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\Entity.tt"
+if(c.DefaultValue != null){
+            
+            #line default
+            #line hidden
+            this.Write(" = ");
+            
+            #line 9 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\Entity.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture(this.GetValue(c)));
+            
+            #line default
+            #line hidden
+            this.Write(";");
+            
+            #line 9 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\Entity.tt"
+}
+            
+            #line default
+            #line hidden
+            this.Write("\r\n");
             
             #line 11 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\Entity.tt"
 }
@@ -72,6 +93,18 @@ foreach(var c in Columns){
 
 public string TableName { get; set; }
 public List<ColumnInfo> Columns { get; set; }
+private string GetType(ColumnInfo c)
+{
+  return CommonFunctions.ConvertSqlTypeToDotNetType(c);
+}
+private string GetName(string name)
+{
+  return CommonFunctions.ConvertDbColumnNameToCSharpPropName(name);
+}
+private string GetValue(ColumnInfo c)
+{
+  return CommonFunctions.ConvertSqlValueToDotNetValue(c);
+}
 
         
         #line default

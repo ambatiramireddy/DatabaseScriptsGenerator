@@ -104,6 +104,29 @@ namespace DatabaseScriptsGenerator
             return (column.Nullable && defaultNullableTypesInDotNet.All(t => !t.Equals(dotNetType))) ? dotNetType + "?" : dotNetType;
         }
 
+        public static string ConvertSqlValueToDotNetValue(ColumnInfo column)
+        {
+            string value = string.Empty;
+
+            var sqlType = column.Type;
+            switch (sqlType)
+            {
+               
+                case "bit":
+                    {
+                        value = (column.DefaultValue == "0" ? "false" : "true");
+                        break;
+                    }
+                default:
+                    {
+                        value = column.DefaultValue;
+                        break;
+                    }
+            }
+
+            return value;
+        }
+
         public static void WriteFileToProject(string itemType, string filePath, string projectPath, string content)
         {
             //if (!File.Exists(filePath))

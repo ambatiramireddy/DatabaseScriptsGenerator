@@ -34,6 +34,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Build" />
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
@@ -108,10 +111,36 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="Tables\Settings.json" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\bin\Debug\../../../DatabaseScriptsGenerator/Files/Entity.txt" />
     <Content Include="C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\bin\Debug\../../../DatabaseScriptsGenerator/Files/Script.sql" />
+    <Content Include="Tables\Area.sql" />
+    <Content Include="Tables\City.sql" />
+    <Content Include="Tables\Login.sql" />
+    <Content Include="Tables\MessageTemplate.sql" />
+    <Content Include="Tables\MessageTemplateCategory.sql" />
+    <Content Include="Tables\OurMessage.sql" />
+    <Content Include="Tables\OwnerMessage.sql" />
+    <Content Include="Tables\Request.sql" />
+    <Content Include="Tables\RequestStatus.sql" />
+    <Content Include="Tables\RequestTarget.sql" />
+    <Content Include="Tables\SavedMessage.sql" />
+    <Content Include="Tables\SavedScreen.sql" />
+    <Content Include="Tables\Screen.sql" />
+    <Content Include="Tables\ScreenBooking.sql" />
+    <Content Include="Tables\ScreenCharges.sql" />
+    <Content Include="Tables\ScreenDownTime.sql" />
+    <Content Include="Tables\ScreenStatus.sql" />
+    <Content Include="Tables\ScreenType.sql" />
+    <Content Include="Tables\State.sql" />
+    <Content Include="Tables\User.sql" />
+    <Content Include="Tables\UserCategory.sql" />
+    <Content Include="Tables\UserFeedback.sql" />
+    <Content Include="Tables\UserRelationship.sql" />
+    <Content Include="Tables\UserWallet.sql" />
     <Content Include="Templates\DeleteProc.tt">
       <Generator>TextTemplatingFilePreprocessor</Generator>
       <LastGenOutput>DeleteProc.cs</LastGenOutput>

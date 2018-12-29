@@ -50,6 +50,8 @@ namespace DatabaseScriptsGenerator
         public DataTable ColumnDetails { get; set; }
         public string IdentityColumn { get; set; }
         public string[] KeyColumnNames { get; set; }
+        public Dictionary<string,string> DefaultColumnsAndValues { get; set; }
+        
         public string KeyColumnCategory { get; set; }
         public DataTable ForeignKeyRelations { get; set; }
 
@@ -70,18 +72,36 @@ namespace DatabaseScriptsGenerator
                 //specify length only for char, varchar, nvarchar types
                 string colLengthString = columnType.ToLower().Contains("char") ? $"({columnLength})" : string.Empty;
 
-                var modifiedColumnName = string.Join("", columnName.Split(" _".ToCharArray())).ToLower();
-                if (modifiedColumnName.Equals("isdeleted"))
+                if (this.KeyColumnNames != null && this.KeyColumnNames.Any(c => c.Equals(columnName)))
                 {
-                    this.deletedFlagColumnName = columnName;
-                }
-                else if (this.KeyColumnNames != null && this.KeyColumnNames.Any(c => c.Equals(columnName)))
-                {
-                    keyColumns.Add(new ColumnInfo { Name = columnName, Type = $"{columnType}{colLengthString}", Nullable = colNullable });
+                    keyColumns.Add(new ColumnInfo
+                    {
+                        Name = columnName,
+                        Type = $"{columnType}{colLengthString}",
+                        Nullable = colNullable
+                    });
                 }
                 else
                 {
-                    nonKeyColumns.Add(new ColumnInfo { Name = columnName, Type = $"{columnType}{colLengthString}", Nullable = colNullable });
+                    var modifiedColumnName = string.Join("", columnName.Split(" _".ToCharArray())).ToLower();
+                    if (modifiedColumnName.Contains("deleted") && columnType.Equals("bit"))
+                    {
+                        this.deletedFlagColumnName = columnName;
+                    }
+
+                    string columnDefaultValue = null;
+                    if (this.DefaultColumnsAndValues != null && this.DefaultColumnsAndValues.ContainsKey(columnName))
+                    {
+                        columnDefaultValue = this.DefaultColumnsAndValues[columnName];
+                    }
+
+                    nonKeyColumns.Add(new ColumnInfo
+                    {
+                        Name = columnName,
+                        Type = $"{columnType}{colLengthString}",
+                        Nullable = colNullable,
+                        DefaultValue = columnDefaultValue
+                    });
                 }
             }
 
@@ -100,16 +120,15 @@ namespace DatabaseScriptsGenerator
                 this.keyColumnList = string.Join(twoTabSeparator, keyColumns.Select(c => $"[{c.Name}]"));
 
                 this.onClause = string.Join(" AND ", keyColumns.Select(c => $"t.{c.Name} = s.{c.Name}"));
+                this.whereClauseForDelete = string.Join(" AND ", keyColumns.Select(c => $"{this.fullTableName}.[{c.Name}] = @{c.Name}"));
                 if (this.deletedFlagColumnName == null)
                 {
                     this.whereClause = string.Join(" AND ", keyColumns.Select(c => $"[{c.Name}] = @{c.Name}"));
-                    this.whereClauseForDelete = string.Join(" AND ", keyColumns.Select(c => $"[{this.Owner}].[{this.Name}].[{c.Name}] = @{c.Name}"));
                 }
                 else
                 {
-                    this.deleteFlagWhereClause = $"[{this.deletedFlagColumnName}] IS NULL";
+                    this.deleteFlagWhereClause = $"[{this.deletedFlagColumnName}] = 0";
                     this.whereClause = string.Join(" AND ", keyColumns.Select(c => $"[{c.Name}] = @{c.Name}")) + $" AND {this.deleteFlagWhereClause}";
-                    this.whereClauseForDelete = string.Join(" AND ", keyColumns.Select(c => $"{this.fullTableName}.[{c.Name}] = @{c.Name}")) + $" AND {this.fullTableName}.{this.deleteFlagWhereClause}";
                 }
             }
 
@@ -158,6 +177,8 @@ namespace DatabaseScriptsGenerator
             if (this.deletedFlagColumnName != null)
             {
                 this.softDeleteStatement = GenerateSoftDeleteStatement(ForeignKeyRelations, keyColumns);
+                this.whereClauseForDelete = $"{this.fullTableName}.[{this.deletedFlagColumnName}] = 1";
+                this.hardDeleteStatement = GenerateHardDeleteStatement(ForeignKeyRelations, keyColumns);
             }
             else
             {
@@ -179,7 +200,8 @@ namespace DatabaseScriptsGenerator
             string selectAllProcName = $"[{this.Owner}].[usp_SelectAll_" + (this.Name.EndsWith("y") ? $"{this.Name.TrimEnd('y')}ies]" : $"{this.Name}s]");
             string insertProcName = $"[{this.Owner}].[usp_Insert_{this.Name}]";
             string updateProcName = $"[{this.Owner}].[usp_Update_{this.Name}]";
-            string deleteProcName = $"[{this.Owner}].[usp_Delete_{this.Name}]";
+            string hardDeleteProcName = $"[{this.Owner}].[usp_Delete_{this.Name}]";
+            string softDeleteProcName = $"[{this.Owner}].[usp_SoftDelete_{this.Name}]";
 
             StringBuilder scriptBuilder = new StringBuilder();
             StringBuilder dropScriptBuilder = new StringBuilder();
@@ -260,15 +282,31 @@ namespace DatabaseScriptsGenerator
             scriptBuilder.Append(insertProc);
             dropScriptBuilder.Append(new DropProc() { ProcName = insertProcName }.TransformText().TrimStart('\r', '\n'));
 
-            var deleteProc = new DeleteProc()
+            if (this.softDeleteStatement != null)
             {
-                DeleteProcName = deleteProcName,
-                keyColumnAndTypeList = this.keyColumnAndTypeList,
-                DeleteStatement = this.hardDeleteStatement != null ? this.hardDeleteStatement : this.softDeleteStatement
-            }.TransformText().TrimStart('\r', '\n');
+                var deleteProc = new DeleteProc()
+                {
+                    DeleteProcName = softDeleteProcName,
+                    keyColumnAndTypeList = this.keyColumnAndTypeList,
+                    DeleteStatement = this.softDeleteStatement
+                }.TransformText().TrimStart('\r', '\n');
 
-            scriptBuilder.Append(deleteProc);
-            dropScriptBuilder.Append(new DropProc() { ProcName = deleteProcName }.TransformText().TrimStart('\r', '\n'));
+                scriptBuilder.Append(deleteProc);
+                dropScriptBuilder.Append(new DropProc() { ProcName = softDeleteProcName }.TransformText().TrimStart('\r', '\n'));
+            }
+
+            if (this.hardDeleteStatement != null)
+            {
+                var deleteProc = new DeleteProc()
+                {
+                    DeleteProcName = hardDeleteProcName,
+                    keyColumnAndTypeList = this.keyColumnAndTypeList,
+                    DeleteStatement = this.hardDeleteStatement
+                }.TransformText().TrimStart('\r', '\n');
+
+                scriptBuilder.Append(deleteProc);
+                dropScriptBuilder.Append(new DropProc() { ProcName = hardDeleteProcName }.TransformText().TrimStart('\r', '\n'));
+            }
 
             dropScriptBuilder.Append(new DropType() { TableName = this.Name, TypeName = tableTypeName }.TransformText().TrimStart('\r', '\n'));
 
@@ -278,7 +316,7 @@ namespace DatabaseScriptsGenerator
             var solutionRootFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../");
 
             var dbProjectPath = Path.Combine(solutionRootFolder, "DatabaseScriptsGenerator/DatabaseScriptsGenerator.csproj");
-            var dbScriptPath = Path.Combine(solutionRootFolder, "DatabaseScriptsGenerator/Files/Script.sql");
+            var dbScriptPath = Path.Combine(solutionRootFolder, $"DatabaseScriptsGenerator/Tables/{this.Name}.sql");
             CommonFunctions.WriteFileToProject("Content", dbScriptPath, dbProjectPath, script);
 
             var entity = new Entity()

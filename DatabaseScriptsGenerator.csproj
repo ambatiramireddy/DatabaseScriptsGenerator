@@ -116,7 +116,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="Files\Settings.json" />
     <None Include="Tables\Settings.json" />
     <None Include="packages.config" />
   </ItemGroup>

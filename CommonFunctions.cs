@@ -6,23 +6,21 @@ namespace DatabaseScriptsGenerator
 {
     class CommonFunctions
     {
-        public static string ConvertDbColumnNameToCSharpPropName(string columnName)
+        public static string ConvertDbColNameToDotNetPropName(string columnName)
         {
             TextInfo textInfo = new CultureInfo("en-US", false).TextInfo;
             return string.Join(string.Empty, columnName.Split(" _".ToCharArray()).Select(s => textInfo.ToTitleCase(s)));
         }
 
-        public static string ConvertDbColumnNameToCSharpVariableName(string columnName)
+        public static string ConvertDbColNameToDotNetVariableName(string columnName)
         {
-            var propName = ConvertDbColumnNameToCSharpPropName(columnName);
+            var propName = ConvertDbColNameToDotNetPropName(columnName);
             return propName[0].ToString().ToLower() + propName.Substring(1);
         }
 
-        public static string ConvertSqlTypeToDotNetType(ColumnInfo column)
+        public static string ConvertSqlTypeToDotNetType(string sqlType)
         {
             string dotNetType = string.Empty;
-
-            var sqlType = column.Type;
             switch (sqlType)
             {
                 case "tinyint":
@@ -100,8 +98,15 @@ namespace DatabaseScriptsGenerator
                     }
             }
 
-            string[] defaultNullableTypesInDotNet = { "string", "byte[]" };
-            return (column.Nullable && defaultNullableTypesInDotNet.All(t => !t.Equals(dotNetType))) ? dotNetType + "?" : dotNetType;
+            return dotNetType;
+        }
+
+
+        public static string ConvertSqlTypeToDotNetType(string sqlType, bool colNullable)
+        {
+            string dotNetType = ConvertSqlTypeToDotNetType(sqlType);
+            string[] defaultNullableTypesInDotNet = { "string", "byte[]", "object" };
+            return (colNullable && defaultNullableTypesInDotNet.All(t => !t.Equals(dotNetType))) ? dotNetType + "?" : dotNetType;
         }
 
         public static string ConvertSqlValueToDotNetValue(ColumnInfo column)

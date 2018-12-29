@@ -9,5 +9,8 @@
         public string DefaultValue { get; set; }
 
         public string ReferencingColumnName { get; set; }
+        public string DotNetType { get; set; }
+        public string DotNetPropName { get; set; }
+        public string DotNetVariableName { get; set; }
     }
 }

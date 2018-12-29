@@ -46,6 +46,20 @@ namespace AddAppAPI.Controllers
                 return Content(HttpStatusCode.NotFound, message);
             }
         }
+
+<#if(this.FkColumns.Count > 0 && this.HasIdColumn){#>
+<#foreach (var c in this.FkColumns){
+	var methodName = string.Format("Get{0}IdsBy{1}", this.TableName, c.ReferencingColumnName);
+#>
+		[HttpGet]
+		[Route("<#= methodName #>")]
+        public async Task<IHttpActionResult> <#= methodName #>(<#= $"{c.DotNetType} id" #>)
+        {
+			var parameters = new Dictionary<string, object> { { "<#= c.ReferencingColumnName #>", id } };
+			List<<#= this.KeyColumnType #>> ids = await this.sqlHelper.SelectIdsAsync<<#= this.KeyColumnType #>>(parameters);
+			return Content(HttpStatusCode.OK, ids);
+        }
+<#}}#>
 <#if(HasNameColumn){#>
 
         // GET: api/<#= this.TableName #>/GetIdNamepairs
@@ -86,10 +100,10 @@ namespace AddAppAPI.Controllers
         public async Task<IHttpActionResult> Post(<#= this.TableName #> <#= this.LowerCaseTableName #>)
         {
 <#if(!string.IsNullOrEmpty(this.KeyColumnCategory) && this.KeyColumnCategory.Equals("primary")){#>
-            <#= this.KeyColumnType #> id = await this.sqlHelper.InsertAsync<<#= this.KeyColumnType #>>(<#= this.LowerCaseTableName #>);
+            <#= this.KeyColumnType #> id = await this.sqlHelper.InsertOneAsync<<#= this.KeyColumnType #>>(<#= this.LowerCaseTableName #>);
             return Content(HttpStatusCode.OK, id);
 <#}else{#>
-			await this.sqlHelper.InsertAsync<object>(<#= this.LowerCaseTableName #>);
+			await this.sqlHelper.InsertOneAsync<object>(<#= this.LowerCaseTableName #>);
             return Ok();
 <#}#>
         }
@@ -98,8 +112,8 @@ namespace AddAppAPI.Controllers
         public async Task<IHttpActionResult> Delete(<#= this.KeyColumnAndDotNetTypeList #>)
         {
 			var parameters = new Dictionary<string, object>();
-<#foreach(var key in KeyColumnNames){#>
-			parameters.Add("<#= key #>", <#= CommonFunctions.ConvertDbColumnNameToCSharpVariableName(key) #>);
+<#foreach(var c in KeyColumns){#>
+			parameters.Add("<#= c.Name #>", <#= c.DotNetVariableName #>);
 <#}#>
             var success = await this.sqlHelper.DeleteAsync(parameters);
             if (success)
@@ -129,7 +143,9 @@ public string PluralCaseTableName { get; set; }
 public string KeyColumnType { get; set; }
 public string KeyColumnCategory { get; set; }
 public bool HasNameColumn { get; set; }
-public List<string> KeyColumnNames { get; set; }
+public List<ColumnInfo> KeyColumns { get; set; }
 public string KeyColumnAndDotNetTypeList { get; set; }
 public string KeyColumnDotNetVariableNameList { get; set; }
+public bool HasIdColumn { get; set; }
+public List<ColumnInfo> FkColumns { get; set; }
 #>

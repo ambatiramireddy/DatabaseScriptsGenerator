@@ -6,7 +6,7 @@ namespace AddAppAPI.Models
 	public class <#= this.TableName #>
 	{
 <#foreach(var c in Columns){#>
-		public <#= this.GetType(c) #> <#= this.GetName(c.Name) #> { get; set; }<#if(c.DefaultValue != null){#><#= this.GetValue(c) #><#}#>
+		public <#= c.DotNetType #> <#= c.DotNetPropName #> { get; set; }<#if(c.DefaultValue != null){#><#= this.GetValue(c) #><#}#>
 
 <#}#>
 	}
@@ -21,14 +21,6 @@ namespace AddAppAPI.Models
 <#+
 public string TableName { get; set; }
 public List<ColumnInfo> Columns { get; set; }
-private string GetType(ColumnInfo c)
-{
-  return CommonFunctions.ConvertSqlTypeToDotNetType(c);
-}
-private string GetName(string name)
-{
-  return CommonFunctions.ConvertDbColumnNameToCSharpPropName(name);
-}
 private string GetValue(ColumnInfo c)
 {
   return CommonFunctions.ConvertSqlValueToDotNetValue(c);

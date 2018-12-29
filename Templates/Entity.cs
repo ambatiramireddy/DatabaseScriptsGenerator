@@ -46,14 +46,14 @@ foreach(var c in Columns){
             this.Write("\t\tpublic ");
             
             #line 9 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\Entity.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(this.GetType(c)));
+            this.Write(this.ToStringHelper.ToStringWithCulture(c.DotNetType));
             
             #line default
             #line hidden
             this.Write(" ");
             
             #line 9 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\Entity.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(this.GetName(c.Name)));
+            this.Write(this.ToStringHelper.ToStringWithCulture(c.DotNetPropName));
             
             #line default
             #line hidden
@@ -91,14 +91,6 @@ if(c.DefaultValue != null){
 
 public string TableName { get; set; }
 public List<ColumnInfo> Columns { get; set; }
-private string GetType(ColumnInfo c)
-{
-  return CommonFunctions.ConvertSqlTypeToDotNetType(c);
-}
-private string GetName(string name)
-{
-  return CommonFunctions.ConvertDbColumnNameToCSharpPropName(name);
-}
 private string GetValue(ColumnInfo c)
 {
   return CommonFunctions.ConvertSqlValueToDotNetValue(c);

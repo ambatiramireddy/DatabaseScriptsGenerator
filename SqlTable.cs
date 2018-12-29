@@ -12,7 +12,6 @@ namespace DatabaseScriptsGenerator
     public class SqlTable
     {
         string fullTableName;
-        List<ColumnInfo> allColumns;
         string nonKeyColumnList;
         string allColumnList;
         string keyColumnList;
@@ -38,7 +37,9 @@ namespace DatabaseScriptsGenerator
         string whereClauseForDelete;
         string deletedFlagColumnName;
         bool hasIdColumn;
+        List<ColumnInfo> allColumns;
         List<string> nameColumns = new List<string>();
+        List<ColumnInfo> primaryOrUniqueKeyColumns = new List<ColumnInfo>();
         List<ColumnInfo> fkColumns = new List<ColumnInfo>();
 
         public SqlTable()
@@ -61,7 +62,6 @@ namespace DatabaseScriptsGenerator
         public string GenerateProcs()
         {
             this.fullTableName = $"[{this.Owner}].[{this.Name}]";
-            List<ColumnInfo> primaryOrUniqueKeyColumns = new List<ColumnInfo>();
             List<ColumnInfo> nonKeyColumns = new List<ColumnInfo>();
             fkColumns = new List<ColumnInfo>();
             foreach (DataRow row in ColumnDetails.Rows)
@@ -92,7 +92,10 @@ namespace DatabaseScriptsGenerator
                     {
                         Name = columnName,
                         Type = $"{columnType}{colLengthString}",
-                        Nullable = colNullable
+                        Nullable = colNullable,
+                        DotNetType = CommonFunctions.ConvertSqlTypeToDotNetType(columnType, colNullable),
+                        DotNetPropName = CommonFunctions.ConvertDbColNameToDotNetPropName(columnName),
+                        DotNetVariableName = CommonFunctions.ConvertDbColNameToDotNetVariableName(columnName)
                     });
                 }
                 else
@@ -116,7 +119,8 @@ namespace DatabaseScriptsGenerator
                         {
                             Name = columnName,
                             Type = $"{columnType}{colLengthString}",
-                            ReferencingColumnName = parts[0]+ CommonFunctions.ConvertDbColumnNameToCSharpPropName(parts[1].TrimStart('('))
+                            DotNetType = CommonFunctions.ConvertSqlTypeToDotNetType(columnType, colNullable),
+                            ReferencingColumnName = parts[0] + CommonFunctions.ConvertDbColNameToDotNetPropName(parts[1].TrimStart('('))
                         });
                     }
 
@@ -125,7 +129,10 @@ namespace DatabaseScriptsGenerator
                         Name = columnName,
                         Type = $"{columnType}{colLengthString}",
                         Nullable = colNullable,
-                        DefaultValue = columnDefaultValue
+                        DefaultValue = columnDefaultValue,
+                        DotNetType = CommonFunctions.ConvertSqlTypeToDotNetType(columnType, colNullable),
+                        DotNetPropName = CommonFunctions.ConvertDbColNameToDotNetPropName(columnName),
+                        DotNetVariableName = CommonFunctions.ConvertDbColNameToDotNetVariableName(columnName)
                     });
                 }
             }
@@ -140,8 +147,8 @@ namespace DatabaseScriptsGenerator
             {
                 this.keyColumn = primaryOrUniqueKeyColumns[0];
                 this.keyColumnAndTypeList = string.Join("," + Environment.NewLine, primaryOrUniqueKeyColumns.Select(c => $"@{c.Name} {c.Type}"));
-                this.keyColumnAndDotNetTypeList = string.Join(", ", primaryOrUniqueKeyColumns.Select(c => $"{CommonFunctions.ConvertSqlTypeToDotNetType(c)} {CommonFunctions.ConvertDbColumnNameToCSharpVariableName(c.Name)}"));
-                this.keyColumnDotNetVariableNameList = string.Join(" and ", primaryOrUniqueKeyColumns.Select(c => $"{CommonFunctions.ConvertDbColumnNameToCSharpVariableName(c.Name)}"));
+                this.keyColumnAndDotNetTypeList = string.Join(", ", primaryOrUniqueKeyColumns.Select(c => $"{c.DotNetType} {c.DotNetVariableName}"));
+                this.keyColumnDotNetVariableNameList = string.Join(" and ", primaryOrUniqueKeyColumns.Select(c => $"{c.DotNetVariableName}"));
                 this.keyColumnList = string.Join(twoTabSeparator, primaryOrUniqueKeyColumns.Select(c => $"[{c.Name}]"));
 
                 this.onClause = string.Join(" AND ", primaryOrUniqueKeyColumns.Select(c => $"t.{c.Name} = s.{c.Name}"));
@@ -337,7 +344,7 @@ namespace DatabaseScriptsGenerator
             {
                 foreach (var c in this.fkColumns)
                 {
-                    var procName = $"[{this.Owner}].[usp_Select_{this.Name}Id_By_{c.ReferencingColumnName}]";
+                    var procName = $"[{this.Owner}].[usp_Select_{this.Name}Ids_By_{c.ReferencingColumnName}]";
                     var proc = new SelectPKColumnByFKColumnProc()
                     {
                         FullTableName = this.fullTableName,
@@ -380,16 +387,18 @@ namespace DatabaseScriptsGenerator
                 TableName = this.Name,
                 LowerCaseTableName = lowerCaseTableName,
                 PluralCaseTableName = lowerCaseTableName.EndsWith("y") ? (lowerCaseTableName.TrimEnd('y') + "ies") : (lowerCaseTableName + "s"),
-                KeyColumnType = CommonFunctions.ConvertSqlTypeToDotNetType(this.keyColumn),
+                KeyColumnType = this.keyColumn.DotNetType,
                 KeyColumnCategory = this.KeyColumnCategory,
                 HasNameColumn = this.nameColumns.Count > 0,
-                KeyColumnNames = this.PrimaryOrUniqueKeyColumnNames,
+                KeyColumns = this.primaryOrUniqueKeyColumns,
                 KeyColumnAndDotNetTypeList = this.keyColumnAndDotNetTypeList,
-                KeyColumnDotNetVariableNameList = this.keyColumnDotNetVariableNameList
+                KeyColumnDotNetVariableNameList = this.keyColumnDotNetVariableNameList,
+                FkColumns = this.fkColumns,
+                HasIdColumn = this.hasIdColumn
             }.TransformText().TrimStart('\r', '\n');
 
             var entityControllerPath = Path.Combine(solutionRootFolder, $"AddAppAPI/Controllers/{this.Name}Controller.cs");
-            //CommonFunctions.WriteFileToProject("Compile", entityControllerPath, apiProjectPath, entityController);
+            CommonFunctions.WriteFileToProject("Compile", entityControllerPath, apiProjectPath, entityController);
 
             return script;
         }

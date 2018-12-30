@@ -17,7 +17,7 @@ namespace DatabaseScriptsGenerator
         static void Main(string[] args)
         {
             List<SqlTable> tables = new List<SqlTable>();
-            tables.Add(new SqlTable { Name = "Screen" });
+            //tables.Add(new SqlTable { Name = "Screen" });
 
             if (tables.Count == 0)
             {
@@ -41,10 +41,10 @@ namespace DatabaseScriptsGenerator
                 }
             }
 
-            var solutionRootFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../");
-            var dbProjectPath = Path.Combine(solutionRootFolder, "DatabaseScriptsGenerator/DatabaseScriptsGenerator.csproj");
-            var dbScriptPath = Path.Combine(solutionRootFolder, $"DatabaseScriptsGenerator/Files/Settings.json");
-            CommonFunctions.WriteFileToProject("Content", dbScriptPath, dbProjectPath, JsonConvert.SerializeObject(tables, Formatting.Indented));
+            //var solutionRootFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../");
+            //var dbProjectPath = Path.Combine(solutionRootFolder, "DatabaseScriptsGenerator/DatabaseScriptsGenerator.csproj");
+            //var dbScriptPath = Path.Combine(solutionRootFolder, $"DatabaseScriptsGenerator/Files/Settings.json");
+            //CommonFunctions.WriteFileToProject("Content", dbScriptPath, dbProjectPath, JsonConvert.SerializeObject(tables, Formatting.Indented));
         }
 
         static List<SqlTable> GetTablesList()

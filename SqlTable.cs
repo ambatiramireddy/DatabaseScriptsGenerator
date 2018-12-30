@@ -232,8 +232,8 @@ namespace DatabaseScriptsGenerator
             string selectAllProcName = $"[{this.Owner}].[usp_SelectAll_" + (this.Name.EndsWith("y") ? $"{this.Name.TrimEnd('y')}ies]" : $"{this.Name}s]");
             string insertProcName = $"[{this.Owner}].[usp_Insert_{this.Name}]";
             string updateProcName = $"[{this.Owner}].[usp_Update_{this.Name}]";
-            string hardDeleteProcName = $"[{this.Owner}].[usp_Delete_{this.Name}]";
-            string softDeleteProcName = $"[{this.Owner}].[usp_SoftDelete_{this.Name}]";
+            string hardDeleteProcName = null;
+            string softDeleteProcName = null;
 
             StringBuilder scriptBuilder = new StringBuilder();
             StringBuilder dropScriptBuilder = new StringBuilder();
@@ -316,6 +316,7 @@ namespace DatabaseScriptsGenerator
 
             if (this.softDeleteStatement != null)
             {
+                softDeleteProcName = $"[{this.Owner}].[usp_Delete_{this.Name}]";
                 var deleteProc = new DeleteProc()
                 {
                     DeleteProcName = softDeleteProcName,
@@ -325,6 +326,12 @@ namespace DatabaseScriptsGenerator
 
                 scriptBuilder.Append(deleteProc);
                 dropScriptBuilder.Append(new DropProc() { ProcName = softDeleteProcName }.TransformText().TrimStart('\r', '\n'));
+
+                hardDeleteProcName = $"[{this.Owner}].[usp_HardDelete_{this.Name}]";
+            }
+            else
+            {
+                hardDeleteProcName = $"[{this.Owner}].[usp_Delete_{this.Name}]";
             }
 
             if (this.hardDeleteStatement != null)
@@ -384,9 +391,9 @@ namespace DatabaseScriptsGenerator
             var lowerCaseTableName = this.Name[0].ToString().ToLower() + this.Name.Substring(1);
             var entityController = new EntityController()
             {
-                TableName = this.Name,
-                LowerCaseTableName = lowerCaseTableName,
-                PluralCaseTableName = lowerCaseTableName.EndsWith("y") ? (lowerCaseTableName.TrimEnd('y') + "ies") : (lowerCaseTableName + "s"),
+                EntityName = this.Name,
+                LowerCaseEntityName = lowerCaseTableName,
+                PluralCaseEntityName = lowerCaseTableName.EndsWith("y") ? (lowerCaseTableName.TrimEnd('y') + "ies") : (lowerCaseTableName + "s"),
                 KeyColumnType = this.keyColumn.DotNetType,
                 KeyColumnCategory = this.KeyColumnCategory,
                 HasNameColumn = this.nameColumns.Count > 0,

@@ -8,121 +8,124 @@ using System.Web.Http;
 
 namespace AddAppAPI.Controllers
 {
-    [RoutePrefix("api/<#= this.TableName #>")]
-    public class <#= this.TableName #>Controller : ApiController
+    [RoutePrefix("api/<#= this.EntityName #>")]
+    public class <#= this.EntityName #>Controller : ApiController
     {
-        private ISqlHelper<<#= this.TableName #>> sqlHelper;
+        private ISqlHelper sqlHelper;
 
-        public <#= this.TableName #>Controller()
+        public <#= this.EntityName #>Controller()
         {
-            this.sqlHelper = new SqlHelper<<#= this.TableName #>>();
+            this.sqlHelper = new SqlHelper();
         }
 
-        public <#= this.TableName #>Controller(ISqlHelper<<#= this.TableName #>> sqlHelper)
+        public <#= this.EntityName #>Controller(ISqlHelper sqlHelper)
         {
             this.sqlHelper = sqlHelper;
         }
 
 <#if(!string.IsNullOrEmpty(this.KeyColumnCategory) && this.KeyColumnCategory.Equals("primary")){#>
-        // GET: api/<#= this.TableName #>
+        // GET: api/<#= this.EntityName #>
         public async Task<IHttpActionResult> Get()
         {
-            var <#= this.PluralCaseTableName #> = await this.sqlHelper.SelectAllAsync();
-            return Content(HttpStatusCode.OK, <#= this.PluralCaseTableName #>);
+            var <#= this.PluralCaseEntityName #> = await this.sqlHelper.SelectAllAsync<<#= this.EntityName #>>();
+            return Content(HttpStatusCode.OK, <#= this.PluralCaseEntityName #>);
         }
 
-        // GET: api/<#= this.TableName #>/5
+        // GET: api/<#= this.EntityName #>/5
         public async Task<IHttpActionResult> Get(<#= this.KeyColumnType #> id)
         {
-			var parameters = new Dictionary<string, object> { { "id", id } };
-            var <#= this.LowerCaseTableName #> = await this.sqlHelper.SelectOneAsync(parameters);
-            if (<#= this.LowerCaseTableName #> != null)
+			var parameters = new List<Parameter>();
+			parameters.Add(new Parameter { Name = "id", Value = id });
+            var <#= this.LowerCaseEntityName #> = await this.sqlHelper.SelectOneAsync<<#= this.EntityName #>>(parameters);
+            if (<#= this.LowerCaseEntityName #> != null)
             {
-                return Content(HttpStatusCode.OK, <#= this.LowerCaseTableName #>);
+                return Content(HttpStatusCode.OK, <#= this.LowerCaseEntityName #>);
             }
             else
             {
-                var message = string.Format("No <#= this.TableName #> found for <#= this.LowerCaseTableName #> id:{0}", id);
+                var message = string.Format("No <#= this.EntityName #> found for <#= this.LowerCaseEntityName #> id:{0}", id);
                 return Content(HttpStatusCode.NotFound, message);
             }
         }
 
 <#if(this.FkColumns.Count > 0 && this.HasIdColumn){#>
 <#foreach (var c in this.FkColumns){
-	var methodName = string.Format("Get{0}IdsBy{1}", this.TableName, c.ReferencingColumnName);
+	var methodName = string.Format("Get{0}IdsBy{1}", this.EntityName, c.ReferencingColumnName);
 #>
 		[HttpGet]
 		[Route("<#= methodName #>")]
         public async Task<IHttpActionResult> <#= methodName #>(<#= $"{c.DotNetType} id" #>)
         {
-			var parameters = new Dictionary<string, object> { { "<#= c.ReferencingColumnName #>", id } };
-			List<<#= this.KeyColumnType #>> ids = await this.sqlHelper.SelectIdsAsync<<#= this.KeyColumnType #>>(parameters);
+			var parameters = new List<Parameter>();
+			parameters.Add(new Parameter { Name = "<#= c.ReferencingColumnName #>", Value = id });
+			List<<#= this.KeyColumnType #>> ids = await this.sqlHelper.SelectIdsAsync<<#= this.EntityName #>, <#= this.KeyColumnType #>>(parameters);
 			return Content(HttpStatusCode.OK, ids);
         }
 <#}}#>
 <#if(HasNameColumn){#>
 
-        // GET: api/<#= this.TableName #>/GetIdNamepairs
+        // GET: api/<#= this.EntityName #>/GetIdNamepairs
         [HttpGet]
         [Route("GetIdNamepairs")]
         public async Task<IHttpActionResult> GetIdNamepairs()
         {
-            var idNamePairs = await this.sqlHelper.SelectIdNamePairsAsync<<#= this.KeyColumnType #>, string>();
+            var idNamePairs = await this.sqlHelper.SelectIdNamePairsAsync<<#= this.EntityName #>, <#= this.KeyColumnType #>, string>();
             return Content(HttpStatusCode.OK, idNamePairs);
         }
 
 <#}else{#>
 
 <#}#>
-		// PUT: api/<#= this.TableName #>/5
-        public async Task<IHttpActionResult> Put(<#= this.KeyColumnType #> id, <#= this.TableName #> <#= this.LowerCaseTableName #>)
+		// PUT: api/<#= this.EntityName #>/5
+        public async Task<IHttpActionResult> Put(<#= this.KeyColumnType #> id, <#= this.EntityName #> <#= this.LowerCaseEntityName #>)
         {
-            if (id != <#= this.LowerCaseTableName #>.Id)
+            if (id != <#= this.LowerCaseEntityName #>.Id)
             {
-                var message = string.Format("id:'{0}' not matching with <#= this.LowerCaseTableName #> id:'{1}'", id, <#= this.LowerCaseTableName #>.Id);
+                var message = string.Format("id:'{0}' not matching with <#= this.LowerCaseEntityName #> id:'{1}'", id, <#= this.LowerCaseEntityName #>.Id);
                 return Content(HttpStatusCode.BadRequest, message);
             }
 
-            var success = await this.sqlHelper.UpdateAsync(<#= this.LowerCaseTableName #>);
+            var success = await this.sqlHelper.UpdateAsync<<#= this.EntityName #>>(<#= this.LowerCaseEntityName #>);
             if (success)
             {
                 return Content(HttpStatusCode.OK, id);
             }
             else
             {
-                var message = string.Format("No <#= this.TableName #> found for <#= this.LowerCaseTableName #> id:'{0}'", id);
+                var message = string.Format("No <#= this.EntityName #> found for <#= this.LowerCaseEntityName #> id:'{0}'", id);
                 return Content(HttpStatusCode.NotFound, message);
             }
         }
 <#}#>
 
-        // POST: api/<#= this.TableName #>
-        public async Task<IHttpActionResult> Post(<#= this.TableName #> <#= this.LowerCaseTableName #>)
+        // POST: api/<#= this.EntityName #>
+        public async Task<IHttpActionResult> Post(<#= this.EntityName #> <#= this.LowerCaseEntityName #>)
         {
 <#if(!string.IsNullOrEmpty(this.KeyColumnCategory) && this.KeyColumnCategory.Equals("primary")){#>
-            <#= this.KeyColumnType #> id = await this.sqlHelper.InsertOneAsync<<#= this.KeyColumnType #>>(<#= this.LowerCaseTableName #>);
+            <#= this.KeyColumnType #> id = await this.sqlHelper.InsertOneAsync<<#= this.EntityName #>, <#= this.KeyColumnType #>>(<#= this.LowerCaseEntityName #>);
             return Content(HttpStatusCode.OK, id);
 <#}else{#>
-			await this.sqlHelper.InsertOneAsync<object>(<#= this.LowerCaseTableName #>);
+			await this.sqlHelper.InsertOneAsync<<#= this.EntityName #>, object>(<#= this.LowerCaseEntityName #>);
             return Ok();
 <#}#>
         }
 
-        // DELETE: api/<#= this.TableName #>/5
+        // DELETE: api/<#= this.EntityName #>/5
         public async Task<IHttpActionResult> Delete(<#= this.KeyColumnAndDotNetTypeList #>)
         {
-			var parameters = new Dictionary<string, object>();
+			var parameters = new List<Parameter>();
 <#foreach(var c in KeyColumns){#>
-			parameters.Add("<#= c.Name #>", <#= c.DotNetVariableName #>);
+			parameters.Add(new Parameter { Name = "<#= c.Name #>", Value = <#= c.DotNetVariableName #> });
+
 <#}#>
-            var success = await this.sqlHelper.DeleteAsync(parameters);
+            var success = await this.sqlHelper.DeleteAsync<<#= this.EntityName #>>(parameters);
             if (success)
             {
                 return Ok();
             }
             else
             {
-                var message = string.Format("No <#= this.TableName #> found for given <#= this.KeyColumnDotNetVariableNameList #>");
+                var message = string.Format("No <#= this.EntityName #> found for given <#= this.KeyColumnDotNetVariableNameList #>");
                 return Content(HttpStatusCode.NotFound, message);
             }
         }
@@ -137,9 +140,9 @@ namespace AddAppAPI.Controllers
 <#@ import namespace="System.Collections.Generic" #>
 <#@ import namespace="DatabaseScriptsGenerator" #>
 <#+
-public string TableName { get; set; }
-public string LowerCaseTableName { get; set; }
-public string PluralCaseTableName { get; set; }
+public string EntityName { get; set; }
+public string LowerCaseEntityName { get; set; }
+public string PluralCaseEntityName { get; set; }
 public string KeyColumnType { get; set; }
 public string KeyColumnCategory { get; set; }
 public bool HasNameColumn { get; set; }

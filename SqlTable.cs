@@ -227,9 +227,10 @@ namespace DatabaseScriptsGenerator
 
         private string GenerateScripts()
         {
+            string tablePluralName = (this.Name.EndsWith("y") ? $"{this.Name.TrimEnd('y')}ies" : $"{this.Name}s");
             string tableTypeName = $"[{this.Owner}].[tt_{this.Name}]";
             string selectProcName = $"[{this.Owner}].[usp_Select_{this.Name}]";
-            string selectAllProcName = $"[{this.Owner}].[usp_SelectAll_" + (this.Name.EndsWith("y") ? $"{this.Name.TrimEnd('y')}ies]" : $"{this.Name}s]");
+            string selectAllProcName = $"[{this.Owner}].[usp_SelectAll_{tablePluralName}]";
             string insertProcName = $"[{this.Owner}].[usp_Insert_{this.Name}]";
             string updateProcName = $"[{this.Owner}].[usp_Update_{this.Name}]";
             string hardDeleteProcName = null;
@@ -357,7 +358,20 @@ namespace DatabaseScriptsGenerator
                         FullTableName = this.fullTableName,
                         ProcName = procName,
                         VariablesList = $"@{c.ReferencingColumnName} {c.Type}",
-                        PkColumnList = string.Join(",", this.keyColumnList),
+                        ColumnList = string.Join(",", this.keyColumnList),
+                        WhereClause = $"[{c.Name}] = @{c.ReferencingColumnName}" + (this.deleteFlagWhereClause == null ? "" : $" AND {this.deleteFlagWhereClause}")
+                    }.TransformText().TrimStart('\r', '\n');
+
+                    scriptBuilder.Append(proc);
+                    dropScriptBuilder.Append(new DropProc() { ProcName = procName }.TransformText().TrimStart('\r', '\n'));
+
+                    procName = $"[{this.Owner}].[usp_Select_{tablePluralName}_By_{c.ReferencingColumnName}]";
+                    proc = new SelectPKColumnByFKColumnProc()
+                    {
+                        FullTableName = this.fullTableName,
+                        ProcName = procName,
+                        VariablesList = $"@{c.ReferencingColumnName} {c.Type}",
+                        ColumnList = this.allColumnList,
                         WhereClause = $"[{c.Name}] = @{c.ReferencingColumnName}" + (this.deleteFlagWhereClause == null ? "" : $" AND {this.deleteFlagWhereClause}")
                     }.TransformText().TrimStart('\r', '\n');
 
@@ -392,8 +406,9 @@ namespace DatabaseScriptsGenerator
             var entityController = new EntityController()
             {
                 EntityName = this.Name,
+                PluralEntityName = tablePluralName,
                 LowerCaseEntityName = lowerCaseTableName,
-                PluralCaseEntityName = lowerCaseTableName.EndsWith("y") ? (lowerCaseTableName.TrimEnd('y') + "ies") : (lowerCaseTableName + "s"),
+                PluralEntityVariableName = lowerCaseTableName.EndsWith("y") ? (lowerCaseTableName.TrimEnd('y') + "ies") : (lowerCaseTableName + "s"),
                 KeyColumnType = this.keyColumn.DotNetType,
                 KeyColumnCategory = this.KeyColumnCategory,
                 HasNameColumn = this.nameColumns.Count > 0,

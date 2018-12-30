@@ -38,13 +38,26 @@ namespace DatabaseScriptsGenerator.Templates
             this.Write("\r\n");
             
             #line 3 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\DeleteProc.tt"
+if(!this.DeleteProcName.Contains("HardDelete")){
+            
+            #line default
+            #line hidden
+            
+            #line 4 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\DeleteProc.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(this.keyColumnAndTypeList));
             
             #line default
             #line hidden
-            this.Write("\r\nAS\r\nBEGIN\r\n\r\n");
+            this.Write("\r\n");
             
-            #line 7 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\DeleteProc.tt"
+            #line 5 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\DeleteProc.tt"
+}
+            
+            #line default
+            #line hidden
+            this.Write("AS\r\nBEGIN\r\n\r\n");
+            
+            #line 9 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\DeleteProc.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(this.DeleteStatement));
             
             #line default
@@ -53,7 +66,7 @@ namespace DatabaseScriptsGenerator.Templates
             return this.GenerationEnvironment.ToString();
         }
         
-        #line 17 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\DeleteProc.tt"
+        #line 19 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\DeleteProc.tt"
 
 public string DeleteProcName { get; set; }
 public string keyColumnAndTypeList { get; set; }

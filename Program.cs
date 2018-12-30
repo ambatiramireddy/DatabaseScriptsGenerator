@@ -17,7 +17,7 @@ namespace DatabaseScriptsGenerator
         static void Main(string[] args)
         {
             List<SqlTable> tables = new List<SqlTable>();
-            //tables.Add(new SqlTable { Name = "Screen" });
+            //tables.Add(new SqlTable { Name = "ScreenBooking" });
 
             if (tables.Count == 0)
             {

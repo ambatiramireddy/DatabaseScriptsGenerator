@@ -45,7 +45,7 @@ namespace DatabaseScriptsGenerator.Templates
             this.Write("\r\nAS\r\nBEGIN\r\n\r\n\tSELECT ");
             
             #line 7 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\SelectPKColumnByFKColumnProc.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(this.PkColumnList));
+            this.Write(this.ToStringHelper.ToStringWithCulture(this.ColumnList));
             
             #line default
             #line hidden
@@ -71,7 +71,7 @@ namespace DatabaseScriptsGenerator.Templates
 
 public string FullTableName { get; set; }
 public string ProcName { get; set; }
-public string PkColumnList { get; set; }
+public string ColumnList { get; set; }
 public string VariablesList { get; set; }
 public string WhereClause { get; set; }
 

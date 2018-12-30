@@ -27,8 +27,8 @@ namespace AddAppAPI.Controllers
         // GET: api/<#= this.EntityName #>
         public async Task<IHttpActionResult> Get()
         {
-            var <#= this.PluralCaseEntityName #> = await this.sqlHelper.SelectAllAsync<<#= this.EntityName #>>();
-            return Content(HttpStatusCode.OK, <#= this.PluralCaseEntityName #>);
+            var <#= this.PluralEntityVariableName #> = await this.sqlHelper.SelectAllAsync<<#= this.EntityName #>>();
+            return Content(HttpStatusCode.OK, <#= this.PluralEntityVariableName #>);
         }
 
         // GET: api/<#= this.EntityName #>/5
@@ -50,17 +50,29 @@ namespace AddAppAPI.Controllers
 
 <#if(this.FkColumns.Count > 0 && this.HasIdColumn){#>
 <#foreach (var c in this.FkColumns){
-	var methodName = string.Format("Get{0}IdsBy{1}", this.EntityName, c.ReferencingColumnName);
+	var getIdsMethodName = string.Format("Get{0}IdsBy{1}", this.EntityName, c.ReferencingColumnName);
+	var getAllMethodName = string.Format("Get{0}By{1}", this.PluralEntityName, c.ReferencingColumnName);
 #>
 		[HttpGet]
-		[Route("<#= methodName #>")]
-        public async Task<IHttpActionResult> <#= methodName #>(<#= $"{c.DotNetType} id" #>)
+		[Route("<#= getIdsMethodName #>")]
+        public async Task<IHttpActionResult> <#= getIdsMethodName #>(<#= $"{c.DotNetType} id" #>)
         {
 			var parameters = new List<Parameter>();
 			parameters.Add(new Parameter { Name = "<#= c.ReferencingColumnName #>", Value = id });
-			List<<#= this.KeyColumnType #>> ids = await this.sqlHelper.SelectIdsAsync<<#= this.EntityName #>, <#= this.KeyColumnType #>>(parameters);
+			List<<#= this.KeyColumnType #>> ids = await this.sqlHelper.SelectIdsByReferenceKeyAsync<<#= this.EntityName #>, <#= this.KeyColumnType #>>(parameters);
 			return Content(HttpStatusCode.OK, ids);
         }
+
+		[HttpGet]
+		[Route("<#= getAllMethodName #>")]
+        public async Task<IHttpActionResult> <#= getAllMethodName #>(<#= $"{c.DotNetType} id" #>)
+        {
+			var parameters = new List<Parameter>();
+			parameters.Add(new Parameter { Name = "<#= c.ReferencingColumnName #>", Value = id });
+			List<<#= this.EntityName #>> items = await this.sqlHelper.SelectAllByReferenceKeyAsync<<#= this.EntityName #>>(parameters);
+			return Content(HttpStatusCode.OK, items);
+        }
+
 <#}}#>
 <#if(HasNameColumn){#>
 
@@ -141,8 +153,9 @@ namespace AddAppAPI.Controllers
 <#@ import namespace="DatabaseScriptsGenerator" #>
 <#+
 public string EntityName { get; set; }
+public string PluralEntityName { get; set; }
 public string LowerCaseEntityName { get; set; }
-public string PluralCaseEntityName { get; set; }
+public string PluralEntityVariableName { get; set; }
 public string KeyColumnType { get; set; }
 public string KeyColumnCategory { get; set; }
 public bool HasNameColumn { get; set; }

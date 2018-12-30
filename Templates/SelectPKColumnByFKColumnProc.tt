@@ -4,7 +4,7 @@ CREATE PROC <#= this.ProcName #>
 AS
 BEGIN
 
-	SELECT <#= this.PkColumnList #>
+	SELECT <#= this.ColumnList #>
 	FROM <#= this.FullTableName #>
 	WHERE <#= this.WhereClause #>
 
@@ -19,7 +19,7 @@ GO
 <#+
 public string FullTableName { get; set; }
 public string ProcName { get; set; }
-public string PkColumnList { get; set; }
+public string ColumnList { get; set; }
 public string VariablesList { get; set; }
 public string WhereClause { get; set; }
 #>

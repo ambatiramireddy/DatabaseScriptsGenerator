@@ -1,6 +1,8 @@
 ﻿
 CREATE PROC <#= this.DeleteProcName #>
+<#if(!this.DeleteProcName.Contains("HardDelete")){#>
 <#= this.keyColumnAndTypeList #>
+<#}#>
 AS
 BEGIN
 

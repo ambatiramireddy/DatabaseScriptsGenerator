@@ -80,7 +80,7 @@ if(!string.IsNullOrEmpty(this.KeyColumnCategory) && this.KeyColumnCategory.Equal
                     "");
             
             #line 30 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(this.PluralCaseEntityName));
+            this.Write(this.ToStringHelper.ToStringWithCulture(this.PluralEntityVariableName));
             
             #line default
             #line hidden
@@ -94,7 +94,7 @@ if(!string.IsNullOrEmpty(this.KeyColumnCategory) && this.KeyColumnCategory.Equal
             this.Write(">();\r\n            return Content(HttpStatusCode.OK, ");
             
             #line 31 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(this.PluralCaseEntityName));
+            this.Write(this.ToStringHelper.ToStringWithCulture(this.PluralEntityVariableName));
             
             #line default
             #line hidden
@@ -167,28 +167,29 @@ if(this.FkColumns.Count > 0 && this.HasIdColumn){
             
             #line 52 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
 foreach (var c in this.FkColumns){
-	var methodName = string.Format("Get{0}IdsBy{1}", this.EntityName, c.ReferencingColumnName);
+	var getIdsMethodName = string.Format("Get{0}IdsBy{1}", this.EntityName, c.ReferencingColumnName);
+	var getAllMethodName = string.Format("Get{0}By{1}", this.PluralEntityName, c.ReferencingColumnName);
 
             
             #line default
             #line hidden
             this.Write("\t\t[HttpGet]\r\n\t\t[Route(\"");
             
-            #line 56 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(methodName));
+            #line 57 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture(getIdsMethodName));
             
             #line default
             #line hidden
             this.Write("\")]\r\n        public async Task<IHttpActionResult> ");
             
-            #line 57 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
-            this.Write(this.ToStringHelper.ToStringWithCulture(methodName));
+            #line 58 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture(getIdsMethodName));
             
             #line default
             #line hidden
             this.Write("(");
             
-            #line 57 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            #line 58 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture($"{c.DotNetType} id"));
             
             #line default
@@ -196,48 +197,92 @@ foreach (var c in this.FkColumns){
             this.Write(")\r\n        {\r\n\t\t\tvar parameters = new List<Parameter>();\r\n\t\t\tparameters.Add(new P" +
                     "arameter { Name = \"");
             
-            #line 60 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            #line 61 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(c.ReferencingColumnName));
             
             #line default
             #line hidden
             this.Write("\", Value = id });\r\n\t\t\tList<");
             
-            #line 61 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            #line 62 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(this.KeyColumnType));
             
             #line default
             #line hidden
-            this.Write("> ids = await this.sqlHelper.SelectIdsAsync<");
+            this.Write("> ids = await this.sqlHelper.SelectIdsByReferenceKeyAsync<");
             
-            #line 61 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            #line 62 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(this.EntityName));
             
             #line default
             #line hidden
             this.Write(", ");
             
-            #line 61 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            #line 62 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(this.KeyColumnType));
             
             #line default
             #line hidden
-            this.Write(">(parameters);\r\n\t\t\treturn Content(HttpStatusCode.OK, ids);\r\n        }\r\n");
+            this.Write(">(parameters);\r\n\t\t\treturn Content(HttpStatusCode.OK, ids);\r\n        }\r\n\r\n\t\t[HttpG" +
+                    "et]\r\n\t\t[Route(\"");
             
-            #line 64 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            #line 67 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture(getAllMethodName));
+            
+            #line default
+            #line hidden
+            this.Write("\")]\r\n        public async Task<IHttpActionResult> ");
+            
+            #line 68 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture(getAllMethodName));
+            
+            #line default
+            #line hidden
+            this.Write("(");
+            
+            #line 68 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture($"{c.DotNetType} id"));
+            
+            #line default
+            #line hidden
+            this.Write(")\r\n        {\r\n\t\t\tvar parameters = new List<Parameter>();\r\n\t\t\tparameters.Add(new P" +
+                    "arameter { Name = \"");
+            
+            #line 71 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture(c.ReferencingColumnName));
+            
+            #line default
+            #line hidden
+            this.Write("\", Value = id });\r\n\t\t\tList<");
+            
+            #line 72 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture(this.EntityName));
+            
+            #line default
+            #line hidden
+            this.Write("> items = await this.sqlHelper.SelectAllByReferenceKeyAsync<");
+            
+            #line 72 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            this.Write(this.ToStringHelper.ToStringWithCulture(this.EntityName));
+            
+            #line default
+            #line hidden
+            this.Write(">(parameters);\r\n\t\t\treturn Content(HttpStatusCode.OK, items);\r\n        }\r\n\r\n");
+            
+            #line 76 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
 }}
             
             #line default
             #line hidden
             
-            #line 65 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            #line 77 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
 if(HasNameColumn){
             
             #line default
             #line hidden
             this.Write("\r\n        // GET: api/");
             
-            #line 67 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            #line 79 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(this.EntityName));
             
             #line default
@@ -246,14 +291,14 @@ if(HasNameColumn){
                     "blic async Task<IHttpActionResult> GetIdNamepairs()\r\n        {\r\n            var " +
                     "idNamePairs = await this.sqlHelper.SelectIdNamePairsAsync<");
             
-            #line 72 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            #line 84 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(this.EntityName));
             
             #line default
             #line hidden
             this.Write(", ");
             
-            #line 72 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            #line 84 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(this.KeyColumnType));
             
             #line default
@@ -261,49 +306,49 @@ if(HasNameColumn){
             this.Write(", string>();\r\n            return Content(HttpStatusCode.OK, idNamePairs);\r\n      " +
                     "  }\r\n\r\n");
             
-            #line 76 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            #line 88 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
 }else{
             
             #line default
             #line hidden
             this.Write("\r\n");
             
-            #line 78 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            #line 90 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
 }
             
             #line default
             #line hidden
             this.Write("\t\t// PUT: api/");
             
-            #line 79 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            #line 91 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(this.EntityName));
             
             #line default
             #line hidden
             this.Write("/5\r\n        public async Task<IHttpActionResult> Put(");
             
-            #line 80 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            #line 92 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(this.KeyColumnType));
             
             #line default
             #line hidden
             this.Write(" id, ");
             
-            #line 80 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            #line 92 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(this.EntityName));
             
             #line default
             #line hidden
             this.Write(" ");
             
-            #line 80 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            #line 92 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(this.LowerCaseEntityName));
             
             #line default
             #line hidden
             this.Write(")\r\n        {\r\n            if (id != ");
             
-            #line 82 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            #line 94 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(this.LowerCaseEntityName));
             
             #line default
@@ -311,14 +356,14 @@ if(HasNameColumn){
             this.Write(".Id)\r\n            {\r\n                var message = string.Format(\"id:\'{0}\' not ma" +
                     "tching with ");
             
-            #line 84 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            #line 96 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(this.LowerCaseEntityName));
             
             #line default
             #line hidden
             this.Write(" id:\'{1}\'\", id, ");
             
-            #line 84 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            #line 96 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(this.LowerCaseEntityName));
             
             #line default
@@ -326,14 +371,14 @@ if(HasNameColumn){
             this.Write(".Id);\r\n                return Content(HttpStatusCode.BadRequest, message);\r\n     " +
                     "       }\r\n\r\n            var success = await this.sqlHelper.UpdateAsync<");
             
-            #line 88 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            #line 100 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(this.EntityName));
             
             #line default
             #line hidden
             this.Write(">(");
             
-            #line 88 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            #line 100 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(this.LowerCaseEntityName));
             
             #line default
@@ -342,14 +387,14 @@ if(HasNameColumn){
                     "tatusCode.OK, id);\r\n            }\r\n            else\r\n            {\r\n            " +
                     "    var message = string.Format(\"No ");
             
-            #line 95 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            #line 107 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(this.EntityName));
             
             #line default
             #line hidden
             this.Write(" found for ");
             
-            #line 95 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            #line 107 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(this.LowerCaseEntityName));
             
             #line default
@@ -357,140 +402,140 @@ if(HasNameColumn){
             this.Write(" id:\'{0}\'\", id);\r\n                return Content(HttpStatusCode.NotFound, message" +
                     ");\r\n            }\r\n        }\r\n");
             
-            #line 99 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            #line 111 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
 }
             
             #line default
             #line hidden
             this.Write("\r\n        // POST: api/");
             
-            #line 101 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            #line 113 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(this.EntityName));
             
             #line default
             #line hidden
             this.Write("\r\n        public async Task<IHttpActionResult> Post(");
             
-            #line 102 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            #line 114 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(this.EntityName));
             
             #line default
             #line hidden
             this.Write(" ");
             
-            #line 102 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            #line 114 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(this.LowerCaseEntityName));
             
             #line default
             #line hidden
             this.Write(")\r\n        {\r\n");
             
-            #line 104 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            #line 116 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
 if(!string.IsNullOrEmpty(this.KeyColumnCategory) && this.KeyColumnCategory.Equals("primary")){
             
             #line default
             #line hidden
             this.Write("            ");
             
-            #line 105 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            #line 117 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(this.KeyColumnType));
             
             #line default
             #line hidden
             this.Write(" id = await this.sqlHelper.InsertOneAsync<");
             
-            #line 105 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            #line 117 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(this.EntityName));
             
             #line default
             #line hidden
             this.Write(", ");
             
-            #line 105 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            #line 117 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(this.KeyColumnType));
             
             #line default
             #line hidden
             this.Write(">(");
             
-            #line 105 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            #line 117 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(this.LowerCaseEntityName));
             
             #line default
             #line hidden
             this.Write(");\r\n            return Content(HttpStatusCode.OK, id);\r\n");
             
-            #line 107 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            #line 119 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
 }else{
             
             #line default
             #line hidden
             this.Write("\t\t\tawait this.sqlHelper.InsertOneAsync<");
             
-            #line 108 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            #line 120 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(this.EntityName));
             
             #line default
             #line hidden
             this.Write(", object>(");
             
-            #line 108 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            #line 120 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(this.LowerCaseEntityName));
             
             #line default
             #line hidden
             this.Write(");\r\n            return Ok();\r\n");
             
-            #line 110 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            #line 122 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
 }
             
             #line default
             #line hidden
             this.Write("        }\r\n\r\n        // DELETE: api/");
             
-            #line 113 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            #line 125 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(this.EntityName));
             
             #line default
             #line hidden
             this.Write("/5\r\n        public async Task<IHttpActionResult> Delete(");
             
-            #line 114 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            #line 126 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(this.KeyColumnAndDotNetTypeList));
             
             #line default
             #line hidden
             this.Write(")\r\n        {\r\n\t\t\tvar parameters = new List<Parameter>();\r\n");
             
-            #line 117 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            #line 129 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
 foreach(var c in KeyColumns){
             
             #line default
             #line hidden
             this.Write("\t\t\tparameters.Add(new Parameter { Name = \"");
             
-            #line 118 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            #line 130 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(c.Name));
             
             #line default
             #line hidden
             this.Write("\", Value = ");
             
-            #line 118 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            #line 130 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(c.DotNetVariableName));
             
             #line default
             #line hidden
             this.Write(" });\r\n\r\n");
             
-            #line 120 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            #line 132 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
 }
             
             #line default
             #line hidden
             this.Write("            var success = await this.sqlHelper.DeleteAsync<");
             
-            #line 121 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            #line 133 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(this.EntityName));
             
             #line default
@@ -499,14 +544,14 @@ foreach(var c in KeyColumns){
                     "k();\r\n            }\r\n            else\r\n            {\r\n                var messag" +
                     "e = string.Format(\"No ");
             
-            #line 128 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            #line 140 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(this.EntityName));
             
             #line default
             #line hidden
             this.Write(" found for given ");
             
-            #line 128 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+            #line 140 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(this.KeyColumnDotNetVariableNameList));
             
             #line default
@@ -516,11 +561,12 @@ foreach(var c in KeyColumns){
             return this.GenerationEnvironment.ToString();
         }
         
-        #line 142 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
+        #line 154 "C:\Users\raambat\Documents\Visual Studio 2017\Projects\AddWinFormsApp\DatabaseScriptsGenerator\Templates\EntityController.tt"
 
 public string EntityName { get; set; }
+public string PluralEntityName { get; set; }
 public string LowerCaseEntityName { get; set; }
-public string PluralCaseEntityName { get; set; }
+public string PluralEntityVariableName { get; set; }
 public string KeyColumnType { get; set; }
 public string KeyColumnCategory { get; set; }
 public bool HasNameColumn { get; set; }
